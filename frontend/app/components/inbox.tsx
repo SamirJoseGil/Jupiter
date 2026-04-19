@@ -1,6 +1,6 @@
 import { Link } from "@remix-run/react";
 
-interface PQRSD {
+interface PQRSDfDf {
   id: number;
   content: string;
   channel: string;
@@ -11,7 +11,7 @@ interface PQRSD {
 }
 
 interface InboxProps {
-  pqrs: PQRSD[];
+  PQRSDf: PQRSDfDf[];
 }
 
 const getChannelLabel = (channel: string) => {
@@ -59,11 +59,11 @@ const truncateText = (text: string, length: number = 100) => {
   return text.length > length ? text.substring(0, length) + "..." : text;
 };
 
-export default function Inbox({ pqrs }: InboxProps) {
-  // Ensure pqrs is an array
-  const pqrsList = Array.isArray(pqrs) ? pqrs : [];
+export default function Inbox({ PQRSDf }: InboxProps) {
+  // Ensure PQRSDf is an array
+  const PQRSDfList = Array.isArray(PQRSDf) ? PQRSDf : [];
   
-  if (pqrsList.length === 0) {
+  if (PQRSDfList.length === 0) {
     return (
       <div className="text-center py-12">
         <p className="text-gray-500 text-lg">No hay solicitudes</p>
@@ -73,7 +73,7 @@ export default function Inbox({ pqrs }: InboxProps) {
 
   return (
     <div className="space-y-2">
-      {pqrsList.map((pqr) => (
+      {PQRSDfList.map((pqr) => (
         <Link
           key={pqr.id}
           to={`/admin/${pqr.id}`}

@@ -9,19 +9,19 @@ interface SuggestionPreview {
   topics: string[];
 }
 
-interface PQRSDFormProps {
+interface PQRSDfDfFormProps {
   onSuccess?: () => void;
 }
 
 const CONTACT_INTENTS: Array<{ label: string; hint: string; channel: FormChannel }> = [
-  { label: "Radicar en portal", hint: "Formulario y trazabilidad oficial", channel: "official-web" },
+  { label: "Jupiter", hint: "Radicación y seguimiento institucional", channel: "official-web" },
   { label: "Chatear por WhatsApp", hint: "Respuesta rápida por mensajería", channel: "official-whatsapp" },
   { label: "Usar asistente IA", hint: "Orientación guiada automática", channel: "official-ai" },
   { label: "Enviar por correo", hint: "Ideal para adjuntos", channel: "official-email" },
   { label: "Llamar por teléfono", hint: "Atención directa", channel: "official-phone" },
 ];
 
-export default function PQRSDForm({ onSuccess }: PQRSDFormProps) {
+export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
   const [content, setContent] = useState("");
   const [channel, setChannel] = useState<FormChannel>("official-web");
   const [loading, setLoading] = useState(false);
@@ -109,10 +109,10 @@ export default function PQRSDForm({ onSuccess }: PQRSDFormProps) {
         body: JSON.stringify({ content, channel }),
       });
 
-      if (!response.ok) throw new Error("Error submitting PQRSD");
+      if (!response.ok) throw new Error("Error submitting PQRS");
 
       await response.json();
-      setMessage("PQRSD enviada exitosamente!");
+      setMessage("PQRS enviada exitosamente!");
       setContent("");
       setChannel("official-web");
 
@@ -135,7 +135,7 @@ export default function PQRSDForm({ onSuccess }: PQRSDFormProps) {
         transition={{ duration: 0.45 }}
         className="mx-auto max-w-3xl rounded-3xl border border-slate-200 bg-white p-8 shadow-lg"
       >
-        <h2 className="mb-2 text-3xl font-black text-slate-900">Envia tu Solicitud</h2>
+        <h2 className="mb-2 text-3xl font-black text-slate-900">Envía tu solicitud</h2>
         <p className="mb-6 text-sm text-slate-600">Canal ciudadano para peticiones, quejas, reclamos y sugerencias.</p>
 
         <div className="mb-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
@@ -163,7 +163,7 @@ export default function PQRSDForm({ onSuccess }: PQRSDFormProps) {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Canal */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
             Canal oficial de atención
           </label>
           <select
@@ -228,7 +228,7 @@ export default function PQRSDForm({ onSuccess }: PQRSDFormProps) {
             <div className="flex items-start gap-3">
               <span className="text-sm font-semibold text-slate-700">IA</span>
               <div className="flex-1">
-                <p className="text-sm font-semibold text-blue-900">Sugerencia IA en Tiempo Real</p>
+                <p className="text-sm font-semibold text-blue-900">Sugerencia IA en tiempo real</p>
                 <div className="mt-2 space-y-2">
                   <div>
                     <p className="text-xs text-blue-700 font-medium">Departamento sugerido:</p>

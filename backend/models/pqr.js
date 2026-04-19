@@ -19,7 +19,7 @@ class PQR {
     }
 
     const query = `
-      INSERT INTO pqrs (content, channel, assigned_department, status, created_at)
+      INSERT INTO PQRSDf (content, channel, assigned_department, status, created_at)
       VALUES ($1, $2, $3, 'pending', NOW())
       RETURNING *;
     `;
@@ -34,7 +34,7 @@ class PQR {
   }
 
   static async getAll(filters = {}) {
-    let query = 'SELECT * FROM pqrs WHERE 1=1';
+    let query = 'SELECT * FROM PQRSDf WHERE 1=1';
     let params = [];
     let paramIndex = 1;
 
@@ -72,8 +72,8 @@ class PQR {
     const limit = Math.min(parseInt(filters.limit) || 25, 100);
     const offset = (page - 1) * limit;
 
-    let countQuery = 'SELECT COUNT(*)::int AS total FROM pqrs WHERE 1=1';
-    let dataQuery = 'SELECT * FROM pqrs WHERE 1=1';
+    let countQuery = 'SELECT COUNT(*)::int AS total FROM PQRSDf WHERE 1=1';
+    let dataQuery = 'SELECT * FROM PQRSDf WHERE 1=1';
     let params = [];
     let paramIndex = 1;
 
@@ -129,7 +129,7 @@ class PQR {
       throw new Error('Invalid PQR ID');
     }
 
-    const query = 'SELECT * FROM pqrs WHERE id = $1;';
+    const query = 'SELECT * FROM PQRSDf WHERE id = $1;';
     const result = await pool.query(query, [id]);
     return result.rows[0];
   }
@@ -148,7 +148,7 @@ class PQR {
     }
 
     const query = `
-      UPDATE pqrs
+      UPDATE PQRSDf
       SET classification = $1, 
           confidence = $2, 
           summary = $3, 
@@ -184,7 +184,7 @@ class PQR {
       throw new Error(`Invalid status. Must be one of: ${VALID_STATUSES.join(', ')}`);
     }
 
-    const query = 'UPDATE pqrs SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING *;';
+    const query = 'UPDATE PQRSDf SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING *;';
     const result = await pool.query(query, [status, id]);
     return result.rows[0];
   }
@@ -195,7 +195,7 @@ class PQR {
     }
 
     const query = `
-      UPDATE pqrs 
+      UPDATE PQRSDf 
       SET assigned_to_user_id = $1, 
           assigned_department = $2,
           status = 'assigned',
@@ -214,7 +214,7 @@ class PQR {
     }
 
     const query = `
-      UPDATE pqrs
+      UPDATE PQRSDf
       SET status = 'assigned',
           assigned_department = COALESCE(assigned_department, classification),
           updated_at = NOW()
@@ -240,7 +240,7 @@ class PQR {
     }
 
     const query = `
-      UPDATE pqrs
+      UPDATE PQRSDf
       SET classification = $1,
           confidence = $2,
           assigned_department = $1,
@@ -255,12 +255,12 @@ class PQR {
   }
 
   static async getStats() {
-    const totalResult = await pool.query('SELECT COUNT(*)::int AS total FROM pqrs;');
-    const confidenceResult = await pool.query('SELECT AVG(confidence)::numeric(10,2) AS avg_confidence FROM pqrs WHERE confidence IS NOT NULL;');
+    const totalResult = await pool.query('SELECT COUNT(*)::int AS total FROM PQRSDf;');
+    const confidenceResult = await pool.query('SELECT AVG(confidence)::numeric(10,2) AS avg_confidence FROM PQRSDf WHERE confidence IS NOT NULL;');
     const correctedResult = await pool.query('SELECT COUNT(*)::int AS corrected FROM corrections;');
     const statusResult = await pool.query(`
       SELECT status, COUNT(*)::int AS count
-      FROM pqrs
+      FROM PQRSDf
       GROUP BY status;
     `);
 
@@ -278,7 +278,7 @@ class PQR {
     const total = totalResult.rows[0].total;
 
     return {
-      total_pqrs: total,
+      total_PQRSDf: total,
       avg_classification_confidence: Number(confidenceResult.rows[0].avg_confidence || 0),
       total_corrected: correctedResult.rows[0].corrected,
       time_saved_minutes: total * 15,

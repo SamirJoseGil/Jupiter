@@ -45,11 +45,11 @@ export const OFFICIAL_CHANNEL_CONFIG: Record<OfficialChannel, {
     actionLabel: 'Abrir WhatsApp oficial'
   },
   'official-web': {
-    label: 'Portal Web Alcaldía de Medellín',
-    description: 'Radicación y seguimiento de solicitudes por el portal oficial.',
+    label: 'Jupiter',
+    description: 'Radicación y seguimiento de solicitudes dentro del sistema institucional.',
     redirectUrl: import.meta.env.VITE_MEDELLIN_WEB_URL || 'https://www.medellin.gov.co/es/contactenos/',
     ingestChannel: 'web',
-    actionLabel: 'Abrir portal oficial'
+    actionLabel: 'Abrir Jupiter'
   },
   'official-ai': {
     label: 'Asistente Virtual IA',
@@ -75,7 +75,7 @@ export const OFFICIAL_CHANNEL_CONFIG: Record<OfficialChannel, {
 };
 
 export const FORM_CHANNELS: Array<{ value: FormChannel; label: string; type: 'internal' | 'official' }> = [
-  { value: 'official-web', label: 'Portal Web Alcaldía de Medellín', type: 'official' },
+  { value: 'official-web', label: 'Jupiter', type: 'official' },
   { value: 'official-whatsapp', label: 'WhatsApp Alcaldía de Medellín', type: 'official' },
   { value: 'official-ai', label: 'Asistente Virtual IA', type: 'official' },
   { value: 'official-email', label: 'Correo oficial Alcaldía', type: 'official' },

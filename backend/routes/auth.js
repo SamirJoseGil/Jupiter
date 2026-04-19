@@ -1,7 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const { verifyToken } = require('../middleware/auth');
+const { verifyToken, verifyAdmin } = require('../middleware/auth');
 const router = express.Router();
 
 const generateToken = (user) => {
@@ -15,6 +15,28 @@ const generateToken = (user) => {
     process.env.JWT_SECRET,
     { expiresIn: '24h' }
   );
+};
+
+const sanitizeUser = (user) => ({
+  id: user.id,
+  email: user.email,
+  department: user.department,
+  role: user.role,
+  avatarBase64: user.avatar_base64 || null,
+  avatarMimeType: user.avatar_mime_type || null,
+});
+
+const getRawAvatarSize = (avatarBase64) => {
+  if (!avatarBase64 || typeof avatarBase64 !== 'string') {
+    return 0;
+  }
+
+  const base64 = avatarBase64.includes('base64,')
+    ? avatarBase64.split('base64,')[1]
+    : avatarBase64;
+
+  const padding = base64.endsWith('==') ? 2 : base64.endsWith('=') ? 1 : 0;
+  return Math.floor((base64.length * 3) / 4) - padding;
 };
 
 /**
@@ -141,11 +163,7 @@ router.post('/login', async (req, res) => {
     res.json({
       message: 'Login successful',
       token,
-      user: {
-        id: user.id,
-        email: user.email,
-        department: user.department
-      }
+      user: sanitizeUser(user)
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -195,9 +213,74 @@ router.get('/me', verifyToken, async (req, res) => {
       });
     }
 
-    res.json({ user });
+    res.json({ user: sanitizeUser(user) });
   } catch (error) {
     console.error('Me error:', error);
+    res.status(500).json({
+      error: {
+        status: 500,
+        message: 'Server error'
+      }
+    });
+  }
+});
+
+router.put('/me/profile', verifyToken, verifyAdmin, async (req, res) => {
+  try {
+    const { department, avatarBase64, avatarMimeType } = req.body;
+
+    if (avatarBase64) {
+      if (typeof avatarBase64 !== 'string') {
+        return res.status(400).json({
+          error: {
+            status: 400,
+            message: 'Invalid avatar data'
+          }
+        });
+      }
+
+      if (!avatarMimeType || typeof avatarMimeType !== 'string' || !avatarMimeType.startsWith('image/')) {
+        return res.status(400).json({
+          error: {
+            status: 400,
+            message: 'Avatar must be an image'
+          }
+        });
+      }
+
+      const avatarSize = getRawAvatarSize(avatarBase64);
+      const maxAvatarSize = 20 * 1024 * 1024;
+      if (avatarSize > maxAvatarSize) {
+        return res.status(413).json({
+          error: {
+            status: 413,
+            message: 'Avatar exceeds 20MB limit'
+          }
+        });
+      }
+    }
+
+    const updatedUser = await User.updateProfile(req.user.id, {
+      department: typeof department === 'string' ? department : null,
+      avatarBase64: avatarBase64 || null,
+      avatarMimeType: avatarMimeType || null,
+    });
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        error: {
+          status: 404,
+          message: 'User not found'
+        }
+      });
+    }
+
+    res.json({
+      message: 'Profile updated successfully',
+      user: sanitizeUser(updatedUser)
+    });
+  } catch (error) {
+    console.error('Profile update error:', error);
     res.status(500).json({
       error: {
         status: 500,

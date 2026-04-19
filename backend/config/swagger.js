@@ -6,7 +6,7 @@ const options = {
     info: {
       title: 'Jupiter API',
       version: '1.0.0',
-      description: 'API para la gestion de PQRSD con soporte de IA y autenticacion JWT.'
+      description: 'API para la gestion de PQRSDfDf con soporte de IA y autenticacion JWT.'
     },
     servers: [
       {
@@ -92,7 +92,7 @@ const options = {
         PqrListResponse: {
           type: 'object',
           properties: {
-            pqrs: {
+            PQRSDf: {
               type: 'array',
               items: { $ref: '#/components/schemas/Pqr' }
             }
@@ -122,7 +122,7 @@ const options = {
     tags: [
       { name: 'Health', description: 'Estado del servicio' },
       { name: 'Auth', description: 'Autenticacion de administradores' },
-      { name: 'PQR', description: 'Gestion de solicitudes PQRSD' }
+      { name: 'PQR', description: 'Gestion de solicitudes PQRSDfDf' }
     ]
   },
   apis: ['./routes/*.js', './server.js']

@@ -1,4 +1,4 @@
-# 🎯 Jupiter - Sistema PQRSD con IA
+# 🎯 Jupiter - Sistema PQRSDfDf con IA
 
 **Plataforma centralizada para gestión inteligente de Peticiones, Quejas, Reclamos, Sugerencias y Denuncias**
 
@@ -14,7 +14,7 @@
 ## ✅ La Solución
 
 Plataforma que:
-1. **Centraliza** PQRSD de 5 canales (web, email, chat, teléfono, redes)
+1. **Centraliza** PQRSDfDf de 5 canales (web, email, chat, teléfono, redes)
 2. **Pre-clasifica** automáticamente con IA (85-95% confianza)
 3. **Asiste** al admin con pre-respuestas sin enviar
 4. **Aprende** del comportamiento humano (correcciones)
@@ -106,7 +106,7 @@ npm run dev
 ### Database Auto-initialization
 La BD se crea automáticamente al iniciar backend:
 - Tabla `users` (admin)
-- Tabla `pqrs` (solicitudes)
+- Tabla `PQRSDf` (solicitudes)
 - Tabla `responses` (pre-respuestas)
 - Tabla `corrections` (aprendizaje)
 
@@ -153,7 +153,7 @@ OmegaHack2026/
 │   │   ├── correction.js         (Learning system)
 │   │   └── user.js               (Auth)
 │   ├── routes/
-│   │   ├── pqrs.js               (15+ endpoints)
+│   │   ├── PQRSDf.js               (15+ endpoints)
 │   │   └── auth.js               (login/register)
 │   ├── middleware/
 │   │   └── auth.js               (JWT verification)
@@ -175,7 +175,7 @@ OmegaHack2026/
 │   │   │   ├── admin.tsx         (Dashboard inbox)
 │   │   │   └── admin.$id.tsx     (Detail view)
 │   │   ├── components/
-│   │   │   ├── pqrsd-form.tsx    (+ Real-time suggestions!)
+│   │   │   ├── PQRSDfDf-form.tsx    (+ Real-time suggestions!)
 │   │   │   ├── detail-view.tsx   (+ Modales)
 │   │   │   ├── inbox.tsx         (Listado)
 │   │   │   ├── response-draft.tsx(Pre-respuestas)
@@ -204,21 +204,21 @@ POST /api/auth/register         Register new admin
 POST /api/auth/login            Login & get token
 ```
 
-### PQRSD (Public - Sin auth)
+### PQRSDfDf (Public - Sin auth)
 ```
-POST /api/ingest                Submit new PQRSD
+POST /api/ingest                Submit new PQRSDfDf
 POST /api/analyze-preview       Real-time preview (NUEVO!)
 ```
 
-### PQRSD (Protected - Admin)
+### PQRSDfDf (Protected - Admin)
 ```
-GET  /api/pqrs                  List with pagination
-GET  /api/pqrs/:id              Get detail
+GET  /api/PQRSDf                  List with pagination
+GET  /api/PQRSDf/:id              Get detail
 POST /api/analyze/:id           Analyze with IA
-POST /api/pqrs/:id/accept       Accept classification
-PUT  /api/pqrs/:id/classification Modify classification
-PUT  /api/pqrs/:id/assign       Assign to department
-PUT  /api/pqrs/:id/status       Update status
+POST /api/PQRSDf/:id/accept       Accept classification
+PUT  /api/PQRSDf/:id/classification Modify classification
+PUT  /api/PQRSDf/:id/assign       Assign to department
+PUT  /api/PQRSDf/:id/status       Update status
 GET  /api/stats                 Dashboard metrics
 ```
 
@@ -242,7 +242,7 @@ GET  /api/responses/:pqrId      Get current draft
 ### Admin
 1. Login en `/admin/login`
 2. Ve inbox filtrado por dependencia
-3. Clickea PQRSD → detail view
+3. Clickea PQRSDfDf → detail view
 4. Lee análisis IA
 5. Elige: Aceptar / Modificar / Asignar
 6. Escribe pre-respuesta (no envía)

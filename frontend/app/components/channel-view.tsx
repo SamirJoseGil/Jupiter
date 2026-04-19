@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-interface PQRSD {
+interface PQRSDfDf {
   id: number;
   content: string;
   channel: string;
@@ -13,31 +13,31 @@ interface PQRSD {
 }
 
 interface ChannelViewProps {
-  pqrs: PQRSD[];
+  PQRSDf: PQRSDfDf[];
   onViewDetail?: (id: number) => void;
 }
 
-export default function ChannelView({ pqrs, onViewDetail }: ChannelViewProps) {
+export default function ChannelView({ PQRSDf, onViewDetail }: ChannelViewProps) {
   const [activeChannel, setActiveChannel] = useState<"all" | "email" | "chat" | "web">("all");
 
   // Agrupar por canal
   const filtered = activeChannel === "all" 
-    ? pqrs 
-    : pqrs.filter(p => p.channel === activeChannel);
+    ? PQRSDf 
+    : PQRSDf.filter(p => p.channel === activeChannel);
 
   // Separar por canal
-  const emailPqrs = pqrs.filter(p => p.channel === "email");
-  const chatPqrs = pqrs.filter(p => p.channel === "chat");
-  const webPqrs = pqrs.filter(p => p.channel === "web");
+  const emailPQRSDf = PQRSDf.filter(p => p.channel === "email");
+  const chatPQRSDf = PQRSDf.filter(p => p.channel === "chat");
+  const webPQRSDf = PQRSDf.filter(p => p.channel === "web");
 
   const channels = [
-    { id: "all", label: "Todas", count: pqrs.length, tag: "TODAS" },
-    { id: "email", label: "Correo", count: emailPqrs.length, tag: "CORREO" },
-    { id: "chat", label: "Chat", count: chatPqrs.length, tag: "CHAT" },
-    { id: "web", label: "Web", count: webPqrs.length, tag: "WEB" },
+    { id: "all", label: "Todas", count: PQRSDf.length, tag: "TODAS" },
+    { id: "email", label: "Correo", count: emailPQRSDf.length, tag: "CORREO" },
+    { id: "chat", label: "Chat", count: chatPQRSDf.length, tag: "CHAT" },
+    { id: "web", label: "Web", count: webPQRSDf.length, tag: "WEB" },
   ];
 
-  const renderEmailStyle = (pqr: PQRSD) => (
+  const renderEmailStyle = (pqr: PQRSDfDf) => (
     <div 
       key={pqr.id}
       className="border border-gray-300 rounded-lg p-4 mb-4 bg-white hover:bg-gray-50 transition cursor-pointer"
@@ -91,7 +91,7 @@ export default function ChannelView({ pqrs, onViewDetail }: ChannelViewProps) {
     </div>
   );
 
-  const renderChatStyle = (pqr: PQRSD) => (
+  const renderChatStyle = (pqr: PQRSDfDf) => (
     <div 
       key={pqr.id}
       className="flex flex-col mb-3"
@@ -150,7 +150,7 @@ export default function ChannelView({ pqrs, onViewDetail }: ChannelViewProps) {
     </div>
   );
 
-  const renderWebStyle = (pqr: PQRSD) => (
+  const renderWebStyle = (pqr: PQRSDfDf) => (
     <div 
       key={pqr.id}
       className="border border-gray-200 rounded-lg p-4 mb-4 bg-white hover:shadow-md transition cursor-pointer"
@@ -246,49 +246,49 @@ export default function ChannelView({ pqrs, onViewDetail }: ChannelViewProps) {
 
           {activeChannel === "all" && (
             <div className="space-y-8">
-              {emailPqrs.length > 0 && (
+              {emailPQRSDf.length > 0 && (
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    Correo ({emailPqrs.length})
+                    Correo ({emailPQRSDf.length})
                   </h3>
                   <div className="space-y-2">
-                    {emailPqrs.slice(0, 3).map(renderEmailStyle)}
+                    {emailPQRSDf.slice(0, 3).map(renderEmailStyle)}
                   </div>
-                  {emailPqrs.length > 3 && (
+                  {emailPQRSDf.length > 3 && (
                     <p className="text-center text-gray-500 text-sm mt-2">
-                      +{emailPqrs.length - 3} más
+                      +{emailPQRSDf.length - 3} más
                     </p>
                   )}
                 </div>
               )}
 
-              {chatPqrs.length > 0 && (
+              {chatPQRSDf.length > 0 && (
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    Chat ({chatPqrs.length})
+                    Chat ({chatPQRSDf.length})
                   </h3>
                   <div className="bg-gray-50 rounded-lg p-4">
-                    {chatPqrs.slice(0, 2).map(renderChatStyle)}
+                    {chatPQRSDf.slice(0, 2).map(renderChatStyle)}
                   </div>
-                  {chatPqrs.length > 2 && (
+                  {chatPQRSDf.length > 2 && (
                     <p className="text-center text-gray-500 text-sm mt-2">
-                      +{chatPqrs.length - 2} más
+                      +{chatPQRSDf.length - 2} más
                     </p>
                   )}
                 </div>
               )}
 
-              {webPqrs.length > 0 && (
+              {webPQRSDf.length > 0 && (
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    Web ({webPqrs.length})
+                    Web ({webPQRSDf.length})
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {webPqrs.slice(0, 2).map(renderWebStyle)}
+                    {webPQRSDf.slice(0, 2).map(renderWebStyle)}
                   </div>
-                  {webPqrs.length > 2 && (
+                  {webPQRSDf.length > 2 && (
                     <p className="text-center text-gray-500 text-sm mt-2">
-                      +{webPqrs.length - 2} más
+                      +{webPQRSDf.length - 2} más
                     </p>
                   )}
                 </div>

@@ -7,7 +7,7 @@ import ChannelView from "~/components/channel-view";
 import { isAuthenticated, getHeaders } from "~/utils/auth";
 import { API_BASE_URL } from "~/config";
 
-interface PQRSD {
+interface PQRSDfDf {
   id: number;
   content: string;
   channel: string;
@@ -19,7 +19,7 @@ interface PQRSD {
 
 export default function AdminDashboardPage() {
   const navigate = useNavigate();
-  const [pqrs, setPqrs] = useState<PQRSD[]>([]);
+  const [PQRSDf, setPQRSDf] = useState<PQRSDfDf[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [page, setPage] = useState(1);
@@ -35,11 +35,11 @@ export default function AdminDashboardPage() {
       return;
     }
 
-    const fetchPqrs = async () => {
+    const fetchPQRSDf = async () => {
       try {
         const statusFilter = filter === 'all' ? '' : `&status=${filter}`;
         const response = await fetch(
-          `${API_BASE_URL}/api/pqrs?page=${page}&limit=25&paginate=true${statusFilter}`,
+          `${API_BASE_URL}/api/PQRSDf?page=${page}&limit=25&paginate=true${statusFilter}`,
           { headers: getHeaders() }
         );
         
@@ -54,23 +54,23 @@ export default function AdminDashboardPage() {
         const data = await response.json();
         
         if (data.data !== undefined) {
-          setPqrs(data.data);
+          setPQRSDf(data.data);
           setTotalPages(data.pagination.pages);
         } else {
-          setPqrs(Array.isArray(data.pqrs) ? data.pqrs : []);
+          setPQRSDf(Array.isArray(data.PQRSDf) ? data.PQRSDf : []);
           setTotalPages(1);
         }
       } catch (error) {
-        console.error("Error fetching PQRSs:", error);
-        setPqrs([]);
+        console.error("Error fetching PQRSDfs:", error);
+        setPQRSDf([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPqrs();
+    fetchPQRSDf();
     
-    const interval = setInterval(fetchPqrs, refreshInterval * 1000);
+    const interval = setInterval(fetchPQRSDf, refreshInterval * 1000);
     return () => clearInterval(interval);
   }, [filter, page, refreshInterval, navigate]);
 
@@ -82,8 +82,8 @@ export default function AdminDashboardPage() {
           <div>
             <h1 className="text-3xl font-black text-slate-900">Panel de Administrador</h1>
             <p className="mt-1 text-slate-600">
-              {viewMode === "inbox" && pqrs.length > 0 
-                ? `Mostrando ${pqrs.length} solicitudes - Página ${page}/${totalPages}` 
+              {viewMode === "inbox" && PQRSDf.length > 0 
+                ? `Mostrando ${PQRSDf.length} solicitudes - Página ${page}/${totalPages}` 
                 : viewMode === "inbox"
                 ? "Cargando..."
                 : "Importar emails"}
@@ -103,7 +103,7 @@ export default function AdminDashboardPage() {
               }}
               className={`rounded-xl border px-4 py-2 font-semibold transition ${
                 viewMode === "inbox"
-                  ? "border-cyan-300 bg-cyan-50 text-cyan-700"
+                  ? "border-[#3366CC]/25 bg-[#3366CC]/10 text-[#3366CC]"
                   : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
               }`}
             >
@@ -138,8 +138,8 @@ export default function AdminDashboardPage() {
                   }}
                   className={`rounded-xl border px-4 py-2 font-medium transition ${
                     filter === status
-                      ? "border-cyan-300 bg-cyan-50 text-cyan-700"
-                      : "border-slate-300 bg-white text-slate-700 hover:border-cyan-300"
+                      ? "border-[#3366CC]/25 bg-[#3366CC]/10 text-[#3366CC]"
+                      : "border-slate-300 bg-white text-slate-700 hover:border-[#3366CC]/25"
                   }`}
                 >
                   {status === "all" && "Todas"}
@@ -156,7 +156,7 @@ export default function AdminDashboardPage() {
                   onClick={() => setUseMultiChannelView(!useMultiChannelView)}
                   className={`rounded-xl border px-3 py-2 text-sm font-medium transition ${
                     useMultiChannelView
-                      ? "border-amber-300 bg-amber-50 text-amber-700"
+                      ? "border-[#3366CC]/25 bg-[#3366CC]/10 text-[#3366CC]"
                       : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
                   }`}
                   title="Cambiar vista de canales"
@@ -182,7 +182,7 @@ export default function AdminDashboardPage() {
             {useMultiChannelView ? (
               <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg">
                 <ChannelView 
-                  pqrs={pqrs} 
+                  PQRSDf={PQRSDf} 
                   onViewDetail={(id) => {
                     navigate(`/admin/${id}`);
                   }}
@@ -193,12 +193,12 @@ export default function AdminDashboardPage() {
                 <div className="rounded-3xl border border-slate-200 bg-white shadow-lg">
                   {loading ? (
                     <div className="p-12 text-center">
-                      <div className="mb-2 inline-block h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-cyan-600"></div>
+                      <div className="mb-2 inline-block h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-[#3366CC]"></div>
                       <p className="text-slate-500">Cargando solicitudes...</p>
                     </div>
-                  ) : pqrs.length > 0 ? (
+                  ) : PQRSDf.length > 0 ? (
                     <>
-                      <Inbox pqrs={pqrs} />
+                      <Inbox PQRSDf={PQRSDf} />
                       
                       {/* Pagination Controls */}
                       {totalPages > 1 && (
@@ -233,30 +233,30 @@ export default function AdminDashboardPage() {
                 </div>
 
                 {/* Stats */}
-                {!loading && pqrs.length > 0 && (
+                {!loading && PQRSDf.length > 0 && (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                       <p className="text-sm text-slate-600">Pendientes</p>
                       <p className="text-2xl font-bold text-slate-900">
-                        {pqrs.filter((p) => p.status === "pending").length}
+                        {PQRSDf.filter((p) => p.status === "pending").length}
                       </p>
                     </div>
                     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                       <p className="text-sm text-slate-600">Analizadas</p>
                       <p className="text-2xl font-bold text-slate-900">
-                        {pqrs.filter((p) => p.status === "analyzed").length}
+                        {PQRSDf.filter((p) => p.status === "analyzed").length}
                       </p>
                     </div>
                     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                       <p className="text-sm text-slate-600">Asignadas</p>
                       <p className="text-2xl font-bold text-slate-900">
-                        {pqrs.filter((p) => p.status === "assigned").length}
+                        {PQRSDf.filter((p) => p.status === "assigned").length}
                       </p>
                     </div>
                     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                       <p className="text-sm text-slate-600">Resueltas</p>
                       <p className="text-2xl font-bold text-slate-900">
-                        {pqrs.filter((p) => p.status === "resolved").length}
+                        {PQRSDf.filter((p) => p.status === "resolved").length}
                       </p>
                     </div>
                   </div>

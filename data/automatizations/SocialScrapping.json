@@ -1,5 +1,5 @@
 {
-  "name": "PQRS Social Media Listener",
+  "name": "PQRSDf Social Media Listener",
   "nodes": [
     {
       "parameters": {
@@ -44,7 +44,7 @@
         "method": "POST",
         "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
         "jsonParameters": true,
-        "bodyParametersJson": "={\n  \"contents\": [\n    {\n      \"role\": \"user\",\n      \"parts\": [\n        {\n          \"text\": \"Clasifica este comentario ciudadano como PQRS para la Alcaldía de Medellín.\\n\\nComentario: {{$json.body}}\\n\\nResponde SOLO en JSON con classification, assigned_department, status, summary, confidence\"\n        }\n      ]\n    }\n  ]\n}"
+        "bodyParametersJson": "={\n  \"contents\": [\n    {\n      \"role\": \"user\",\n      \"parts\": [\n        {\n          \"text\": \"Clasifica este comentario ciudadano como PQRSDf para la Alcaldía de Medellín.\\n\\nComentario: {{$json.body}}\\n\\nResponde SOLO en JSON con classification, assigned_department, status, summary, confidence\"\n        }\n      ]\n    }\n  ]\n}"
       },
       "id": "Gemini",
       "name": "Clasificar IA",
@@ -65,7 +65,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO pqrs (content, channel, classification, assigned_department, status, summary, confidence) VALUES ($1,$2,$3,$4,$5,$6,$7)",
+        "query": "INSERT INTO PQRSDf (content, channel, classification, assigned_department, status, summary, confidence) VALUES ($1,$2,$3,$4,$5,$6,$7)",
         "additionalFields": {
           "queryParams": [
             "={{$json.body}}",

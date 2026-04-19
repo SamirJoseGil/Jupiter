@@ -6,15 +6,15 @@
 
 ```bash
 # Crear la base de datos
-createdb pqrs_db
+createdb PQRSDf_db
 
 # Crear la tabla (conectar a la BD y ejecutar el SQL)
-psql pqrs_db -f "c:\Users\samir\Desktop\OmegaHack2026\backend\scripts\init.sql"
+psql PQRSDf_db -f "c:\Users\samir\Desktop\OmegaHack2026\backend\scripts\init.sql"
 ```
 
 **Verificar que funcionó:**
 ```bash
-psql pqrs_db -c "SELECT * FROM pqrs;"
+psql PQRSDf_db -c "SELECT * FROM PQRSDf;"
 ```
 
 Debería mostrar una tabla vacía (sin errores).
@@ -70,10 +70,10 @@ Abre en navegador: http://localhost:5173
 
 ## Paso 4: Probar el Flujo Completo
 
-### 4A. Enviar PQRSD (Lado Ciudadano)
+### 4A. Enviar PQRSDfDf (Lado Ciudadano)
 
 1. En navegador, ve a http://localhost:5173
-2. Haz clic en **"Enviar PQRSD"** (botón azul)
+2. Haz clic en **"Enviar PQRSDfDf"** (botón azul)
 3. Llena el formulario:
    - **Canal**: Selecciona "🌐 Sitio Web"
    - **Solicitud**: Escribe algo como:
@@ -82,7 +82,7 @@ Abre en navegador: http://localhost:5173
      Hay huecos grandes que ponen en riesgo a los vehículos."
      ```
 4. Haz clic **"✅ Enviar Solicitud"**
-5. Deberías ver: "✅ PQRSD enviada exitosamente!"
+5. Deberías ver: "✅ PQRSDfDf enviada exitosamente!"
 
 ---
 
@@ -159,7 +159,7 @@ El sistema simula diferentes canales:
 
 ```bash
 # Ver todas las solicitudes en PostgreSQL
-psql pqrs_db -c "SELECT id, status, classification, confidence FROM pqrs;"
+psql PQRSDf_db -c "SELECT id, status, classification, confidence FROM PQRSDf;"
 ```
 
 **Ejemplo de output:**
@@ -189,13 +189,13 @@ psql pqrs_db -c "SELECT id, status, classification, confidence FROM pqrs;"
 
 **Verifica:**
 ```bash
-psql pqrs_db -c "\dt"  # Ver tablas
-psql pqrs_db -c "SELECT * FROM pqrs;"  # Ver datos
+psql PQRSDf_db -c "\dt"  # Ver tablas
+psql PQRSDf_db -c "SELECT * FROM PQRSDf;"  # Ver datos
 ```
 
 Si la tabla no existe, re-ejecuta:
 ```bash
-psql pqrs_db -f "backend/scripts/init.sql"
+psql PQRSDf_db -f "backend/scripts/init.sql"
 ```
 
 ### ❌ Frontend no ve el backend
@@ -204,7 +204,7 @@ psql pqrs_db -f "backend/scripts/init.sql"
 1. Backend está en http://localhost:8000 ✓
 2. Puedes hacer curl:
    ```bash
-   curl http://localhost:8000/api/pqrs
+   curl http://localhost:8000/api/PQRSDf
    ```
    Debe retornar JSON
 
@@ -245,7 +245,7 @@ curl -X POST http://localhost:8000/api/ingest \
   -d '{"content":"Ha habido robos frecuentes en el parque de mi barrio","channel":"phone"}'
 
 # Ver todas
-curl http://localhost:8000/api/pqrs
+curl http://localhost:8000/api/PQRSDf
 ```
 
 Luego abre http://localhost:5173/admin y verás las 3 solicitudes.
@@ -258,7 +258,7 @@ Luego abre http://localhost:5173/admin y verás las 3 solicitudes.
 - [ ] Backend iniciado en puerto 8000
 - [ ] Frontend iniciado en puerto 5173
 - [ ] Puedo acceder a http://localhost:5173
-- [ ] Puedo enviar una PQRSD
+- [ ] Puedo enviar una PQRSDfDf
 - [ ] Aparece en el admin inbox
 - [ ] Puedo analizarla con IA
 - [ ] Aparecen clasificación, resumen y topics
@@ -273,7 +273,7 @@ Luego abre http://localhost:5173/admin y verás las 3 solicitudes.
 Durante la presentación:
 
 1. **Mostrar Home**: "Dos lados del sistema - Ciudadano y Admin"
-2. **Enviar PQRSD**: "Simple, sin autenticación, solo lo importante"
+2. **Enviar PQRSDfDf**: "Simple, sin autenticación, solo lo importante"
 3. **Ver en Admin**: "Inbox Gmail-like para gestión rápida"
 4. **Analizar**: "IA automática - clasificación + resumen + topics"
 5. **Cambiar Estado**: "Humano valida y decide - no reemplazamos"

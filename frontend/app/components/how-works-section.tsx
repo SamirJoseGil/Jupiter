@@ -115,7 +115,7 @@ export default function HowWorksSection() {
                 Radicar tu PQRS es rápido, seguro y se gestiona directamente dentro del proceso institucional.
               </p>
               <a
-                href="#cta"
+                href="/user"
                 className="inline-block rounded-2xl bg-slate-900 px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-slate-800 active:scale-95"
               >
                 Radicar PQRS Ahora

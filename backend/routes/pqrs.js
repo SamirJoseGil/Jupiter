@@ -81,7 +81,7 @@ const createAnalyzedEmailPqr = async ({ from, subject, content, externalMessageI
  * /api/ingest:
  *   post:
  *     tags: [PQR]
- *     summary: Crea una nueva solicitud PQRSD (publico)
+ *     summary: Crea una nueva solicitud PQRSDfDf (publico)
  *     requestBody:
  *       required: true
  *       content:
@@ -98,7 +98,7 @@ const createAnalyzedEmailPqr = async ({ from, subject, content, externalMessageI
  *               properties:
  *                 message:
  *                   type: string
- *                   example: PQRSD submitted successfully
+ *                   example: PQRSDfDf submitted successfully
  *                 pqr:
  *                   $ref: '#/components/schemas/Pqr'
  *       400:
@@ -108,7 +108,7 @@ const createAnalyzedEmailPqr = async ({ from, subject, content, externalMessageI
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-// POST /ingest - Submit a new PQRSD (Public - Citizen)
+// POST /ingest - Submit a new PQRSDfDf (Public - Citizen)
 router.post('/ingest', async (req, res) => {
   try {
     const { content, channel } = req.body;
@@ -124,7 +124,7 @@ router.post('/ingest', async (req, res) => {
 
     const pqr = await PQR.create({ content, channel });
     res.status(201).json({
-      message: 'PQRSD submitted successfully',
+      message: 'PQRSDfDf submitted successfully',
       pqr
     });
   } catch (error) {
@@ -143,7 +143,7 @@ router.post('/ingest', async (req, res) => {
  * /api/analyze/{id}:
  *   post:
  *     tags: [PQR]
- *     summary: Analiza una PQRSD con IA
+ *     summary: Analiza una PQRSDfDf con IA
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -171,7 +171,7 @@ router.post('/ingest', async (req, res) => {
  *       404:
  *         description: Solicitud no encontrada
  */
-// POST /analyze/:id - Analyze PQRSD with AI (Protected - Admin)
+// POST /analyze/:id - Analyze PQRSDfDf with AI (Protected - Admin)
 router.post('/analyze/:id', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const { id } = req.params;
@@ -205,8 +205,8 @@ router.post('/analyze/:id', verifyToken, verifyAdmin, async (req, res) => {
   }
 });
 
-// POST /pqrs/:id/accept - Accept current classification
-router.post('/pqrs/:id/accept', verifyToken, verifyAdmin, async (req, res) => {
+// POST /PQRSDf/:id/accept - Accept current classification
+router.post('/PQRSDf/:id/accept', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const pqr = await PQR.getById(id);
@@ -227,8 +227,8 @@ router.post('/pqrs/:id/accept', verifyToken, verifyAdmin, async (req, res) => {
   }
 });
 
-// PUT /pqrs/:id/classification - Modify classification and keep learning trace
-router.put('/pqrs/:id/classification', verifyToken, verifyAdmin, async (req, res) => {
+// PUT /PQRSDf/:id/classification - Modify classification and keep learning trace
+router.put('/PQRSDf/:id/classification', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { classification, confidence, adminNotes } = req.body;
@@ -272,7 +272,7 @@ router.put('/pqrs/:id/classification', verifyToken, verifyAdmin, async (req, res
 
 /**
  * @openapi
- * /api/pqrs:
+ * /api/PQRSDf:
  *   get:
  *     tags: [PQR]
  *     summary: Lista solicitudes con filtros
@@ -304,8 +304,8 @@ router.put('/pqrs/:id/classification', verifyToken, verifyAdmin, async (req, res
  *       401:
  *         description: No autenticado
  */
-// GET /pqrs - Get all PQRSDs with optional pagination (Protected - Admin)
-router.get('/pqrs', verifyToken, verifyAdmin, async (req, res) => {
+// GET /PQRSDf - Get all PQRSDfDfs with optional pagination (Protected - Admin)
+router.get('/PQRSDf', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const { status, department, page, limit, paginate } = req.query;
     
@@ -321,8 +321,8 @@ router.get('/pqrs', verifyToken, verifyAdmin, async (req, res) => {
       res.json(result);
     } else {
       // Legacy: return all (for backward compatibility)
-      const pqrs = await PQR.getAll(filters);
-      res.json({ pqrs });
+      const PQRSDf = await PQR.getAll(filters);
+      res.json({ PQRSDf });
     }
   } catch (error) {
     console.error('Get all error:', error);
@@ -337,7 +337,7 @@ router.get('/pqrs', verifyToken, verifyAdmin, async (req, res) => {
 
 /**
  * @openapi
- * /api/pqrs/{id}:
+ * /api/PQRSDf/{id}:
  *   get:
  *     tags: [PQR]
  *     summary: Obtiene una solicitud por ID
@@ -362,8 +362,8 @@ router.get('/pqrs', verifyToken, verifyAdmin, async (req, res) => {
  *       404:
  *         description: Solicitud no encontrada
  */
-// GET /pqrs/:id - Get PQRSD by ID (Protected - Admin)
-router.get('/pqrs/:id', verifyToken, verifyAdmin, async (req, res) => {
+// GET /PQRSDf/:id - Get PQRSDfDf by ID (Protected - Admin)
+router.get('/PQRSDf/:id', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     
@@ -391,7 +391,7 @@ router.get('/pqrs/:id', verifyToken, verifyAdmin, async (req, res) => {
 
 /**
  * @openapi
- * /api/pqrs/{id}/status:
+ * /api/PQRSDf/{id}/status:
  *   put:
  *     tags: [PQR]
  *     summary: Actualiza estado de una solicitud
@@ -424,8 +424,8 @@ router.get('/pqrs/:id', verifyToken, verifyAdmin, async (req, res) => {
  *       400:
  *         description: Datos invalidos
  */
-// PUT /pqrs/:id/status - Update status (Protected - Admin)
-router.put('/pqrs/:id/status', verifyToken, verifyAdmin, async (req, res) => {
+// PUT /PQRSDf/:id/status - Update status (Protected - Admin)
+router.put('/PQRSDf/:id/status', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
@@ -457,7 +457,7 @@ router.put('/pqrs/:id/status', verifyToken, verifyAdmin, async (req, res) => {
 
 /**
  * @openapi
- * /api/pqrs/{id}/assign:
+ * /api/PQRSDf/{id}/assign:
  *   put:
  *     tags: [PQR]
  *     summary: Asigna solicitud a dependencia y/o usuario
@@ -490,8 +490,8 @@ router.put('/pqrs/:id/status', verifyToken, verifyAdmin, async (req, res) => {
  *       400:
  *         description: Datos invalidos
  */
-// PUT /pqrs/:id/assign - Assign to user/department (Protected - Admin)
-router.put('/pqrs/:id/assign', verifyToken, verifyAdmin, async (req, res) => {
+// PUT /PQRSDf/:id/assign - Assign to user/department (Protected - Admin)
+router.put('/PQRSDf/:id/assign', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { userId, department } = req.body;
@@ -617,7 +617,7 @@ router.post('/analyze-preview', async (req, res) => {
  * /api/import-email:
  *   post:
  *     tags: [Email Import]
- *     summary: Importar email y crear PQRSD automáticamente
+ *     summary: Importar email y crear PQRSDfDf automáticamente
  *     security:
  *       - BearerAuth: []
  *     requestBody:
@@ -638,7 +638,7 @@ router.post('/analyze-preview', async (req, res) => {
  *                 example: "Tengo un problema grave..."
  *     responses:
  *       201:
- *         description: Email importado como PQRSD
+ *         description: Email importado como PQRSDfDf
  */
 router.post('/import-email', verifyToken, verifyAdmin, async (req, res) => {
   try {
@@ -686,7 +686,7 @@ router.post('/import-email', verifyToken, verifyAdmin, async (req, res) => {
  *   post:
  *     tags: [Email Import]
  *     summary: Webhook de n8n para ingesta automatica de correos
- *     description: Recibe payload de n8n, analiza con IA y guarda PQRSD en BD.
+ *     description: Recibe payload de n8n, analiza con IA y guarda PQRSDfDf en BD.
  *     requestBody:
  *       required: true
  *     responses:

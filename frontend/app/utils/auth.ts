@@ -4,6 +4,9 @@ export interface User {
   id: number;
   email: string;
   department?: string;
+  role?: string;
+  avatarBase64?: string | null;
+  avatarMimeType?: string | null;
 }
 
 export interface AuthResponse {
@@ -32,6 +35,23 @@ export const clearAuth = (): void => {
   if (typeof window === 'undefined') return;
   localStorage.removeItem(AUTH_STORAGE_KEY);
   localStorage.removeItem(USER_STORAGE_KEY);
+};
+
+export const updateStoredUser = (user: User): void => {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+};
+
+export const getAvatarSrc = (user: User | null): string | null => {
+  if (!user?.avatarBase64 || !user.avatarMimeType) {
+    return null;
+  }
+
+  if (user.avatarBase64.startsWith('data:')) {
+    return user.avatarBase64;
+  }
+
+  return `data:${user.avatarMimeType};base64,${user.avatarBase64}`;
 };
 
 export const login = async (email: string, password: string): Promise<AuthResponse> => {

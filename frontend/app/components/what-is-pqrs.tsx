@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import ClientOnly from "./client-only";
 import { InfoIcon, ShieldIcon, TargetIcon, CheckIcon } from "./icons";
 
-export default function WhatIsPQRS() {
+export default function WhatIsPQRSDf() {
   const definitions = [
     {
       title: "Petición",

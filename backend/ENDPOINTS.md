@@ -106,10 +106,10 @@ Errores:
 - 401: token invalido o ausente
 - 404: usuario no encontrado
 
-## PQRSD
+## PQRSDfDf
 
 ### POST /api/ingest
-Descripcion: Crea nueva PQRSD (ciudadano).
+Descripcion: Crea nueva PQRSDfDf (ciudadano).
 Auth: No
 
 Request body:
@@ -127,7 +127,7 @@ Reglas:
 Response 201:
 ```json
 {
-  "message": "PQRSD submitted successfully",
+  "message": "PQRSDfDf submitted successfully",
   "pqr": {
     "id": 12,
     "content": "Mi solicitud es sobre reparacion de vias en el barrio X.",
@@ -142,7 +142,7 @@ Errores:
 - 400: validacion de contenido/canal
 
 ### POST /api/analyze/:id
-Descripcion: Analiza PQRSD con IA.
+Descripcion: Analiza PQRSDfDf con IA.
 Auth: Si (admin)
 
 Request:
@@ -171,8 +171,8 @@ Errores:
 - 404: no existe PQR
 - 500: error de IA
 
-### GET /api/pqrs
-Descripcion: Lista PQRSD (con filtros).
+### GET /api/PQRSDf
+Descripcion: Lista PQRSDfDf (con filtros).
 Auth: Si (admin)
 
 Query params opcionales:
@@ -183,7 +183,7 @@ Query params opcionales:
 Response 200:
 ```json
 {
-  "pqrs": [
+  "PQRSDf": [
     {
       "id": 12,
       "content": "...",
@@ -200,8 +200,8 @@ Response 200:
 Errores:
 - 401: no autenticado
 
-### GET /api/pqrs/:id
-Descripcion: Obtiene detalle de una PQRSD.
+### GET /api/PQRSDf/:id
+Descripcion: Obtiene detalle de una PQRSDfDf.
 Auth: Si (admin)
 
 Request:
@@ -229,7 +229,7 @@ Errores:
 - 401: no autenticado
 - 404: no encontrado
 
-### PUT /api/pqrs/:id/status
+### PUT /api/PQRSDf/:id/status
 Descripcion: Actualiza estado.
 Auth: Si (admin)
 
@@ -261,7 +261,7 @@ Response 200:
 ## Email Automation (n8n)
 
 ### POST /api/webhooks/n8n/email
-Descripcion: Ingesta automatica de correos desde n8n. Crea PQRSD, ejecuta clasificacion IA y guarda trazabilidad en email_ingestions.
+Descripcion: Ingesta automatica de correos desde n8n. Crea PQRSDfDf, ejecuta clasificacion IA y guarda trazabilidad en email_ingestions.
 Auth: Webhook secret por header
 
 Headers requeridos:
@@ -313,7 +313,7 @@ Errores:
 - 400: status invalido
 - 401: no autenticado
 
-### PUT /api/pqrs/:id/assign
+### PUT /api/PQRSDf/:id/assign
 Descripcion: Asigna solicitud a dependencia/usuario.
 Auth: Si (admin)
 

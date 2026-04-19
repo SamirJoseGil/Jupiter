@@ -55,18 +55,18 @@ const analyzeWithGemini = async (content) => {
           {
             parts: [
               {
-                text: `Actúa como analista de PQRSDs en Medellín, Colombia.
+                text: `Actúa como analista de PQRSDfDfs en Medellín, Colombia.
                 
 Departamentos disponibles: ${Object.keys(knowledgeBase.departamentos).join(', ')}
 
-Análiza la PQRSD y devuelve SOLO un JSON válido (sin markdown adicional) con exactamente estos campos:
+Análiza la PQRSDfDf y devuelve SOLO un JSON válido (sin markdown adicional) con exactamente estos campos:
 - classification: Nombre del departamento
 - confidence: Número entre 0-100
 - summary: Resumen de máximo 150 caracteres
 - topics: Array de máximo 5 temas/palabras clave
 - multi_dependency: Boolean true/false si afecta múltiples dependencias
 
-PQRSD a analizar:
+PQRSDfDf a analizar:
 ${content}`,
               },
             ],
@@ -103,11 +103,11 @@ const analyzeWithOpenAI = async (content) => {
         messages: [
           {
             role: 'system',
-            content: `Actúa como analista de PQRSDs en Medellín, Colombia.
+            content: `Actúa como analista de PQRSDfDfs en Medellín, Colombia.
             
 Departamentos disponibles: ${Object.keys(knowledgeBase.departamentos).join(', ')}
 
-Análiza la PQRSD y devuelve un JSON válido (sin markdown) con exactamente estos campos:
+Análiza la PQRSDfDf y devuelve un JSON válido (sin markdown) con exactamente estos campos:
 - classification: Nombre del departamento
 - confidence: Número entre 0-100
 - summary: Resumen de máximo 150 caracteres
@@ -116,7 +116,7 @@ Análiza la PQRSD y devuelve un JSON válido (sin markdown) con exactamente esto
           },
           {
             role: 'user',
-            content: `Analiza esta PQRSD:\n\n${content}`,
+            content: `Analiza esta PQRSDfDf:\n\n${content}`,
           },
         ],
         temperature: 0.7,

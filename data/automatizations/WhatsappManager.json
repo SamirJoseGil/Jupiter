@@ -1,9 +1,9 @@
 {
-  "name": "PQRS WhatsApp Clasificador",
+  "name": "PQRSDf WhatsApp Clasificador",
   "nodes": [
     {
       "parameters": {
-        "path": "whatsapp-pqrs",
+        "path": "whatsapp-PQRSDf",
         "httpMethod": "POST"
       },
       "id": "Webhook",
@@ -39,7 +39,7 @@
         "method": "POST",
         "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
         "jsonParameters": true,
-        "bodyParametersJson": "={\n  \"contents\": [\n    {\n      \"role\": \"user\",\n      \"parts\": [\n        {\n          \"text\": \"Eres un sistema experto de clasificación de PQRS para la Alcaldía de Medellín.\\n\\nClasifica el siguiente mensaje de WhatsApp:\\n\\nMensaje: {{$json.body}}\\n\\nResponde SOLO en JSON con:\\n{ classification, assigned_department, status, summary, confidence }\"\n        }\n      ]\n    }\n  ]\n}"
+        "bodyParametersJson": "={\n  \"contents\": [\n    {\n      \"role\": \"user\",\n      \"parts\": [\n        {\n          \"text\": \"Eres un sistema experto de clasificación de PQRSDf para la Alcaldía de Medellín.\\n\\nClasifica el siguiente mensaje de WhatsApp:\\n\\nMensaje: {{$json.body}}\\n\\nResponde SOLO en JSON con:\\n{ classification, assigned_department, status, summary, confidence }\"\n        }\n      ]\n    }\n  ]\n}"
       },
       "id": "Gemini",
       "name": "Clasificar IA",
@@ -60,7 +60,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO pqrs (content, channel, classification, assigned_department, status, summary, confidence) VALUES ($1,$2,$3,$4,$5,$6,$7)",
+        "query": "INSERT INTO PQRSDf (content, channel, classification, assigned_department, status, summary, confidence) VALUES ($1,$2,$3,$4,$5,$6,$7)",
         "additionalFields": {
           "queryParams": [
             "={{$json.body}}",

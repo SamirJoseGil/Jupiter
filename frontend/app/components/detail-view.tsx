@@ -46,7 +46,7 @@ export default function DetailView({ pqr, onStatusUpdate }: DetailViewProps) {
   const handleStatusChange = async (newStatus: string) => {
     setUpdatingStatus(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/pqrs/${pqr.id}/status`, {
+      const response = await fetch(`${API_BASE_URL}/api/PQRSDf/${pqr.id}/status`, {
         method: "PUT",
         headers: getHeaders(),
         body: JSON.stringify({ status: newStatus }),
@@ -63,7 +63,7 @@ export default function DetailView({ pqr, onStatusUpdate }: DetailViewProps) {
 
   const handleAcceptClassification = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/pqrs/${pqr.id}/accept`, {
+      const response = await fetch(`${API_BASE_URL}/api/PQRSDf/${pqr.id}/accept`, {
         method: "POST",
         headers: getHeaders()
       });
@@ -88,7 +88,7 @@ export default function DetailView({ pqr, onStatusUpdate }: DetailViewProps) {
         return;
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/pqrs/${pqr.id}/classification`, {
+      const response = await fetch(`${API_BASE_URL}/api/PQRSDf/${pqr.id}/classification`, {
         method: "PUT",
         headers: getHeaders(),
         body: JSON.stringify({
@@ -118,7 +118,7 @@ export default function DetailView({ pqr, onStatusUpdate }: DetailViewProps) {
         return;
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/pqrs/${pqr.id}/assign`, {
+      const response = await fetch(`${API_BASE_URL}/api/PQRSDf/${pqr.id}/assign`, {
         method: "PUT",
         headers: getHeaders(),
         body: JSON.stringify({ department: departmentInput })

@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const swaggerUi = require('swagger-ui-express');
-const pqrsRoutes = require('./routes/pqrs');
+const PQRSDfRoutes = require('./routes/PQRSDf');
 const authRoutes = require('./routes/auth');
 const swaggerSpec = require('./config/swagger');
 
@@ -38,8 +38,8 @@ app.use(cors({
 }));
 
 // Body Parser Middleware
-app.use(express.json({ limit: '10kb' }));
-app.use(express.urlencoded({ limit: '10kb', extended: true }));
+app.use(express.json({ limit: '30mb' }));
+app.use(express.urlencoded({ limit: '30mb', extended: true }));
 
 // Swagger
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -50,7 +50,7 @@ app.get('/api/docs.json', (req, res) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api', pqrsRoutes);
+app.use('/api', PQRSDfRoutes);
 
 // Health Check
 app.get('/health', (req, res) => {

@@ -20,7 +20,7 @@ class User {
     
     try {
       const result = await pool.query(
-        'INSERT INTO users (email, password_hash, department, is_active) VALUES ($1, $2, $3, $4) RETURNING id, email, department',
+        'INSERT INTO users (email, password_hash, department, is_active) VALUES ($1, $2, $3, $4) RETURNING id, email, department, avatar_base64, avatar_mime_type, role, is_active',
         [email.toLowerCase(), hashedPassword, department, true]
       );
       return result.rows[0];
@@ -34,7 +34,7 @@ class User {
 
   static async findByEmail(email) {
     const result = await pool.query(
-      'SELECT id, email, password_hash, department, is_active FROM users WHERE email = $1 AND is_active = true',
+      'SELECT id, email, password_hash, department, avatar_base64, avatar_mime_type, role, is_active FROM users WHERE email = $1 AND is_active = true',
       [email.toLowerCase()]
     );
     return result.rows[0];
@@ -42,7 +42,7 @@ class User {
 
   static async findById(id) {
     const result = await pool.query(
-      'SELECT id, email, department, is_active FROM users WHERE id = $1 AND is_active = true',
+      'SELECT id, email, department, avatar_base64, avatar_mime_type, role, is_active FROM users WHERE id = $1 AND is_active = true',
       [id]
     );
     return result.rows[0];
@@ -56,6 +56,20 @@ class User {
     const result = await pool.query(
       'UPDATE users SET department = $1 WHERE id = $2 RETURNING id, email, department',
       [department, userId]
+    );
+    return result.rows[0];
+  }
+
+  static async updateProfile(userId, { department = null, avatarBase64 = null, avatarMimeType = null }) {
+    const result = await pool.query(
+      `UPDATE users
+       SET department = COALESCE($2, department),
+           avatar_base64 = COALESCE($3, avatar_base64),
+           avatar_mime_type = COALESCE($4, avatar_mime_type),
+           avatar_updated_at = CASE WHEN $3 IS NOT NULL THEN NOW() ELSE avatar_updated_at END
+       WHERE id = $1 AND is_active = true
+       RETURNING id, email, department, avatar_base64, avatar_mime_type, role, is_active`,
+      [userId, department, avatarBase64, avatarMimeType]
     );
     return result.rows[0];
   }

@@ -2,20 +2,20 @@ import type { MetaFunction } from "@remix-run/node";
 import Navbar from "~/components/navbar";
 import Footer from "~/components/footer";
 import HeroSection from "~/components/hero-section";
-import WhatIsPQRS from "~/components/what-is-pqrs";
+import WhatIsPQRSDf from "~/components/what-is-pqrs";
 import EntitiesSection from "~/components/entities-section";
 import HowWorksSection from "~/components/how-works-section";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "PQRSD Hub - Plataforma Oficial PQRS Medellín" },
+    { title: "PQRS Hub - Plataforma Oficial PQRS Medellín" },
     { name: "description", content: "Plataforma municipal oficial para radicar peticiones, quejas, reclamos, sugerencias y denuncias en Medellín. Gestión inteligente con IA y seguimiento en tiempo real." },
     { name: "keywords", content: "PQRS, Medellín, Alcaldía, peticiones, quejas, reclamos, sugerencias, denuncias" },
     { name: "author", content: "Alcaldía de Medellín" },
-    { property: "og:title", content: "PQRSD Hub - Plataforma Oficial PQRS Medellín" },
+    { property: "og:title", content: "PQRS Hub - Plataforma Oficial PQRS Medellín" },
     { property: "og:description", content: "Radicar y seguir tus PQRS ante la administración municipal con transparencia y eficiencia." },
     { property: "og:type", content: "website" },
-    { name: "theme-color", content: "#0891b2" },
+    { name: "theme-color", content: "#3366CC" },
   ];
 };
 
@@ -25,7 +25,7 @@ export default function Index() {
       <Navbar />
       <main id="main-content" className="flex-1">
         <HeroSection />
-        <WhatIsPQRS />
+        <WhatIsPQRSDf />
         <EntitiesSection />
         <HowWorksSection />
       </main>

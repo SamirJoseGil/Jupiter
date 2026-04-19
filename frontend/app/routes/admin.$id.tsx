@@ -7,7 +7,7 @@ import { isAuthenticated, getHeaders } from "~/utils/auth";
 import { API_BASE_URL } from "~/config";
 import { InfoIcon } from "~/components/icons";
 
-interface PQRSD {
+interface PQRSDfDf {
   id: number;
   content: string;
   channel: string;
@@ -26,7 +26,7 @@ interface PQRSD {
 export default function AdminDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [pqr, setPqr] = useState<PQRSD | null>(null);
+  const [pqr, setPqr] = useState<PQRSDfDf | null>(null);
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +40,7 @@ export default function AdminDetailPage() {
 
     const fetchPqr = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/pqrs/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/PQRSDf/${id}`, {
           headers: getHeaders()
         });
         
@@ -108,7 +108,7 @@ export default function AdminDetailPage() {
       <AdminLayout>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-t-2 border-cyan-600"></div>
+            <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-t-2 border-[#3366CC]"></div>
             <p className="text-slate-600">Cargando solicitud...</p>
           </div>
         </div>
@@ -124,7 +124,7 @@ export default function AdminDetailPage() {
             <p className="mb-4 text-lg font-medium text-red-600">Atención: {error || "Solicitud no encontrada"}</p>
             <button
               onClick={() => navigate('/admin')}
-              className="rounded-xl border border-cyan-300 bg-cyan-50 px-6 py-2 font-semibold text-cyan-700 transition hover:bg-cyan-100"
+              className="rounded-xl border border-[#3366CC]/25 bg-[#3366CC]/10 px-6 py-2 font-semibold text-[#3366CC] transition hover:bg-[#3366CC]/15"
             >
               Volver al Panel
             </button>
@@ -142,7 +142,7 @@ export default function AdminDetailPage() {
           <div className="mb-4 flex flex-wrap items-center gap-2">
             <button
               onClick={() => navigate('/admin')}
-              className="flex items-center gap-1 rounded-xl border border-cyan-300 bg-cyan-50 px-4 py-2 text-sm font-semibold text-cyan-700 transition hover:bg-cyan-100"
+              className="flex items-center gap-1 rounded-xl border border-[#3366CC]/25 bg-[#3366CC]/10 px-4 py-2 text-sm font-semibold text-[#3366CC] transition hover:bg-[#3366CC]/15"
             >
               ← Volver al Panel
             </button>
@@ -174,18 +174,18 @@ export default function AdminDetailPage() {
 
         {/* Analyze Banner */}
         {pqr.status === "pending" && !pqr.classification && (
-          <div className="mb-6 rounded-2xl border border-cyan-200 bg-cyan-50 p-4">
+          <div className="mb-6 rounded-2xl border border-[#3366CC]/20 bg-[#3366CC]/5 p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <InfoIcon className="h-6 w-6 text-cyan-700" />
-                <p className="font-medium text-cyan-900">
+                <InfoIcon className="h-6 w-6 text-[#3366CC]" />
+                <p className="font-medium text-slate-900">
                   Esta solicitud aún no ha sido analizada. Usa IA para clasificarla automáticamente.
                 </p>
               </div>
               <button
                 onClick={handleAnalyze}
                 disabled={analyzing}
-                className="whitespace-nowrap rounded-xl border border-cyan-300 bg-white px-6 py-2 font-semibold text-cyan-700 transition hover:bg-cyan-100 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400"
+                className="whitespace-nowrap rounded-xl border border-[#3366CC]/25 bg-white px-6 py-2 font-semibold text-[#3366CC] transition hover:bg-[#3366CC]/5 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400"
               >
                 {analyzing ? "Analizando..." : "Analizar IA"}
               </button>
@@ -247,7 +247,7 @@ export default function AdminDetailPage() {
                     </div>
                     <div className="h-2 w-full rounded-full bg-slate-200">
                       <div
-                        className="h-2 rounded-full bg-gradient-to-r from-cyan-500 to-amber-500 transition-all duration-300"
+                        className="h-2 rounded-full bg-gradient-to-r from-[#3366CC] to-amber-500 transition-all duration-300"
                         style={{ width: `${pqr.confidence}%` }}
                       ></div>
                     </div>

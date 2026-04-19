@@ -1,5 +1,5 @@
 import Navbar from "~/components/navbar";
-import PQRSDForm from "~/components/pqrsd-form";
+import PQRSDfDfForm from "~/components/pqrsd-form";
 import { useState } from "react";
 import { Link } from "@remix-run/react";
 import { CheckIcon } from "~/components/icons";
@@ -24,7 +24,7 @@ export default function UserPage() {
               ¡Solicitud Enviada!
             </h1>
             <p className="mb-6 text-slate-600">
-              Tu PQRSD ha sido registrada en el sistema. 
+              Tu PQRS ha sido registrada en el sistema. 
               Será revisada por nuestro equipo dentro de 15 días hábiles.
             </p>
             <p className="mb-6 text-sm text-slate-500">
@@ -69,7 +69,7 @@ export default function UserPage() {
                 Volver al Inicio
               </Link>
             </div>
-            <PQRSDForm onSuccess={() => setSubmitted(true)} />
+            <PQRSDfDfForm onSuccess={() => setSubmitted(true)} />
           </div>
         </div>
       </main>

@@ -14,15 +14,33 @@ const initDatabase = async () => {
         department VARCHAR(100),
         role VARCHAR(50) DEFAULT 'admin',
         is_active BOOLEAN DEFAULT TRUE,
+        avatar_base64 TEXT,
+        avatar_mime_type VARCHAR(100),
+        avatar_updated_at TIMESTAMP,
         created_at TIMESTAMP DEFAULT NOW()
       );
     `);
     console.log('Users table ready');
 
-    // Create pqrs table
-    console.log('Creating pqrs table...');
     await pool.query(`
-      CREATE TABLE IF NOT EXISTS pqrs (
+      ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS avatar_base64 TEXT;
+    `);
+
+    await pool.query(`
+      ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS avatar_mime_type VARCHAR(100);
+    `);
+
+    await pool.query(`
+      ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS avatar_updated_at TIMESTAMP;
+    `);
+
+    // Create PQRSDf table
+    console.log('Creating PQRSDf table...');
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS PQRSDf (
         id SERIAL PRIMARY KEY,
         content TEXT NOT NULL,
         channel VARCHAR(50) NOT NULL,
@@ -38,32 +56,32 @@ const initDatabase = async () => {
         updated_at TIMESTAMP DEFAULT NOW()
       );
     `);
-    console.log('PQRS table ready');
+    console.log('PQRSDf table ready');
 
-    // Add missing columns to existing pqrs table
+    // Add missing columns to existing PQRSDf table
     await pool.query(`
-      ALTER TABLE pqrs
+      ALTER TABLE PQRSDf
       ADD COLUMN IF NOT EXISTS assigned_department VARCHAR(100);
     `);
     
     await pool.query(`
-      ALTER TABLE pqrs
+      ALTER TABLE PQRSDf
       ADD COLUMN IF NOT EXISTS assigned_to_user_id INTEGER REFERENCES users(id);
     `);
     
     await pool.query(`
-      ALTER TABLE pqrs
+      ALTER TABLE PQRSDf
       ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT NOW();
     `);
     
-    console.log('PQRS table columns updated');
+    console.log('PQRSDf table columns updated');
 
     // Create responses table
     console.log('Creating responses table...');
     await pool.query(`
       CREATE TABLE IF NOT EXISTS responses (
         id SERIAL PRIMARY KEY,
-        pqr_id INTEGER NOT NULL REFERENCES pqrs(id) ON DELETE CASCADE,
+        pqr_id INTEGER NOT NULL REFERENCES PQRSDf(id) ON DELETE CASCADE,
         created_by_user_id INTEGER REFERENCES users(id),
         response_text TEXT,
         status VARCHAR(50) DEFAULT 'draft',
@@ -91,7 +109,7 @@ const initDatabase = async () => {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS corrections (
         id SERIAL PRIMARY KEY,
-        pqr_id INTEGER NOT NULL REFERENCES pqrs(id) ON DELETE CASCADE,
+        pqr_id INTEGER NOT NULL REFERENCES PQRSDf(id) ON DELETE CASCADE,
         original_classification VARCHAR(100),
         corrected_classification VARCHAR(100),
         confidence_before INTEGER,
@@ -114,7 +132,7 @@ const initDatabase = async () => {
         content TEXT NOT NULL,
         raw_payload JSONB,
         status VARCHAR(50) DEFAULT 'received',
-        pqr_id INTEGER REFERENCES pqrs(id) ON DELETE SET NULL,
+        pqr_id INTEGER REFERENCES PQRSDf(id) ON DELETE SET NULL,
         last_error TEXT,
         processed_at TIMESTAMP,
         created_at TIMESTAMP DEFAULT NOW(),
@@ -127,10 +145,11 @@ const initDatabase = async () => {
     console.log('Creating indices...');
     try {
       await pool.query(`
-        CREATE INDEX IF NOT EXISTS idx_pqrs_status ON pqrs(status);
-        CREATE INDEX IF NOT EXISTS idx_pqrs_department ON pqrs(assigned_department);
-        CREATE INDEX IF NOT EXISTS idx_pqrs_user ON pqrs(assigned_to_user_id);
+        CREATE INDEX IF NOT EXISTS idx_PQRSDf_status ON PQRSDf(status);
+        CREATE INDEX IF NOT EXISTS idx_PQRSDf_department ON PQRSDf(assigned_department);
+        CREATE INDEX IF NOT EXISTS idx_PQRSDf_user ON PQRSDf(assigned_to_user_id);
         CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+        CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
         CREATE INDEX IF NOT EXISTS idx_responses_pqr ON responses(pqr_id);
         CREATE INDEX IF NOT EXISTS idx_corrections_pqr ON corrections(pqr_id);
         CREATE INDEX IF NOT EXISTS idx_email_ingestions_status ON email_ingestions(status);

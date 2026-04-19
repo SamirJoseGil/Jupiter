@@ -87,8 +87,8 @@ export default function HeroSection() {
                 <div className="relative space-y-6">
                   {/* Icono grande */}
                   <div className="flex justify-center">
-                    <div className="p-6 rounded-full bg-slate-100">
-                      <FormIcon className="w-16 h-16 text-slate-700" />
+                      <div className="flex h-40 w-40 items-center justify-center rounded-full bg-white p-6 shadow-sm sm:h-48 sm:w-48">
+                        <img src="/img/Logo.png" alt="Jupiter" className="h-full w-full object-contain" />
                     </div>
                   </div>
 
