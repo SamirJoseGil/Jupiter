@@ -1,11 +1,14 @@
 import Navbar from "~/components/navbar";
 import PQRSDfDfForm from "~/components/pqrsd-form";
+import FaqAssistant from "~/components/faq-assistant";
+import { PqrsStatusCheck } from "~/components/pqrs-status-check";
 import { useState } from "react";
 import { Link } from "@remix-run/react";
 import { CheckIcon } from "~/components/icons";
 
 export default function UserPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [trackingId, setTrackingId] = useState<number | null>(null);
 
   if (submitted) {
     return (
@@ -24,9 +27,14 @@ export default function UserPage() {
               ¡Solicitud Enviada!
             </h1>
             <p className="mb-6 text-slate-600">
-              Tu PQRSDf ha sido registrada en el sistema. 
+              Tu PQRSDF ha sido registrada en el sistema. 
               Será revisada por nuestro equipo dentro de 15 días hábiles.
             </p>
+            {trackingId && (
+              <p className="mb-4 rounded-xl border border-[#3366CC]/20 bg-[#3366CC]/5 px-4 py-3 text-sm font-semibold text-[#3366CC]">
+                Radicado generado: #{trackingId}
+              </p>
+            )}
             <p className="mb-6 text-sm text-slate-500">
               Puedes enviar otra solicitud cuando lo necesites.
             </p>
@@ -69,7 +77,16 @@ export default function UserPage() {
                 Volver al Inicio
               </Link>
             </div>
-            <PQRSDfDfForm onSuccess={() => setSubmitted(true)} />
+            <FaqAssistant />
+            <PqrsStatusCheck />
+            <PQRSDfDfForm
+              onSuccess={(payload) => {
+                if (payload?.id) {
+                  setTrackingId(payload.id);
+                }
+                setSubmitted(true);
+              }}
+            />
           </div>
         </div>
       </main>

@@ -3,6 +3,7 @@ import { useNavigate } from "@remix-run/react";
 import { API_BASE_URL, DEPARTMENTS } from "~/config";
 import { getHeaders } from "~/utils/auth";
 import ResponseDraft from "~/components/response-draft";
+import AdminPqrRelations from "~/components/admin-pqr-relations";
 import Toast from "~/components/toast-notification";
 import { InfoIcon } from "~/components/icons";
 
@@ -12,10 +13,13 @@ interface DetailViewProps {
     content: string;
     channel: string;
     classification?: string;
+    assigned_department?: string;
     confidence?: number;
     summary?: string;
     topics?: string[];
     multi_dependency?: boolean;
+    evidence_images?: Array<{ url?: string | null; fileName?: string; key?: string }>;
+    evidence_documents?: Array<{ url?: string | null; fileName?: string; key?: string }>;
     status: string;
     created_at: string;
   };
@@ -29,14 +33,20 @@ const getChannelLabel = (channel: string) => {
     chat: "Chat",
     phone: "Telefono",
     social: "Social",
+    'official-web': 'Jupiter',
+    'official-whatsapp': 'Flor IA por WhatsApp',
+    'official-ai': 'Flor IA',
+    'official-email': 'Correo oficial',
+    'official-phone': 'Línea oficial',
   };
   return labels[channel] || channel;
 };
 
 export default function DetailView({ pqr, onStatusUpdate }: DetailViewProps) {
   const navigate = useNavigate();
+  const effectiveClassification = pqr.classification || pqr.assigned_department || "Sin clasificar";
   const [updatingStatus, setUpdatingStatus] = useState(false);
-  const [classificationInput, setClassificationInput] = useState(pqr.classification || "");
+  const [classificationInput, setClassificationInput] = useState(pqr.classification || pqr.assigned_department || "");
   const [confidenceInput, setConfidenceInput] = useState<number>(pqr.confidence || 80);
   const [departmentInput, setDepartmentInput] = useState("");
   const [showModifyModal, setShowModifyModal] = useState(false);
@@ -161,26 +171,26 @@ export default function DetailView({ pqr, onStatusUpdate }: DetailViewProps) {
       </div>
 
       {/* AI Analysis Results */}
-      {pqr.classification && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Classification */}
           <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-4">
             <p className="text-xs font-semibold text-blue-600 uppercase mb-2">Clasificación</p>
-            <p className="text-lg font-bold text-blue-900">{pqr.classification}</p>
+            <div className="flex items-center gap-2">
+              <span className={`h-2.5 w-2.5 rounded-full ${effectiveClassification === 'Sin clasificar' ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+              <p className="text-lg font-bold text-blue-900">{effectiveClassification}</p>
+            </div>
             {pqr.confidence && (
-              <div className="mt-3">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-xs text-blue-700">Confianza</span>
-                  <span className="text-sm font-semibold text-blue-900">{pqr.confidence}%</span>
-                </div>
-                <div className="w-full bg-blue-200 rounded-full h-2">
-                  <div
-                    className="bg-blue-600 h-2 rounded-full transition-all"
-                    style={{ width: `${pqr.confidence}%` }}
-                  ></div>
-                </div>
+              <div className="mt-2">
+                <span className="text-xs text-blue-700">Confianza estimada: </span>
+                <span className="text-sm font-semibold text-blue-900">{pqr.confidence}%</span>
               </div>
             )}
+          </div>
+
+          <div className="bg-gradient-to-br from-slate-50 to-white border border-slate-200 rounded-lg p-4">
+            <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Canal</p>
+            <p className="text-lg font-bold text-slate-900">{getChannelLabel(pqr.channel)}</p>
+            <p className="mt-2 text-xs text-slate-500">Código interno: {pqr.channel}</p>
           </div>
 
           {/* Summary */}
@@ -191,7 +201,6 @@ export default function DetailView({ pqr, onStatusUpdate }: DetailViewProps) {
             </div>
           )}
         </div>
-      )}
 
       {/* Topics */}
       {pqr.topics && pqr.topics.length > 0 && (
@@ -210,6 +219,50 @@ export default function DetailView({ pqr, onStatusUpdate }: DetailViewProps) {
         </div>
       )}
 
+      {(pqr.evidence_images?.length || pqr.evidence_documents?.length) ? (
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <p className="text-xs font-semibold text-gray-600 uppercase mb-3">Evidencias adjuntas</p>
+
+          {pqr.evidence_images?.length ? (
+            <div className="mb-3">
+              <p className="text-sm font-semibold text-slate-800 mb-1">Imágenes</p>
+              <div className="space-y-1">
+                {pqr.evidence_images.map((item, idx) => (
+                  <a
+                    key={`${item.key || item.fileName || idx}-img`}
+                    href={item.url || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-sm text-[#3366CC] underline"
+                  >
+                    {item.fileName || `Imagen ${idx + 1}`}
+                  </a>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {pqr.evidence_documents?.length ? (
+            <div>
+              <p className="text-sm font-semibold text-slate-800 mb-1">Documentos</p>
+              <div className="space-y-1">
+                {pqr.evidence_documents.map((item, idx) => (
+                  <a
+                    key={`${item.key || item.fileName || idx}-doc`}
+                    href={item.url || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-sm text-[#3366CC] underline"
+                  >
+                    {item.fileName || `Documento ${idx + 1}`}
+                  </a>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
       {/* Multi-dependency Alert */}
       {pqr.multi_dependency && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
@@ -227,28 +280,39 @@ export default function DetailView({ pqr, onStatusUpdate }: DetailViewProps) {
 
         <button
           onClick={handleAcceptClassification}
-          className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition font-medium flex items-center justify-center gap-2"
+          className="w-full rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100"
         >
-          <span>Aceptar</span> Clasificación
+          Aceptar clasificación
         </button>
 
         <button
           onClick={() => setShowModifyModal(true)}
-          className="w-full px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition font-medium flex items-center justify-center gap-2"
+          className="w-full rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700 transition hover:bg-amber-100"
         >
-          <span>Editar</span> Clasificación
+          Editar clasificación
         </button>
 
         <button
           onClick={() => setShowAssignModal(true)}
-          className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition font-medium flex items-center justify-center gap-2"
+          className="w-full rounded-xl border border-[#3366CC]/25 bg-[#3366CC]/10 px-4 py-3 text-sm font-semibold text-[#3366CC] transition hover:bg-[#3366CC]/15"
         >
-          <span>Asignar</span> a Dependencia
+          Asignar a dependencia
         </button>
       </div>
 
+      <AdminPqrRelations pqrId={pqr.id} />
+
       {/* Response Draft */}
-      <ResponseDraft pqrId={pqr.id} onStatusUpdated={onStatusUpdate} />
+      <ResponseDraft
+        pqrId={pqr.id}
+        onStatusUpdated={onStatusUpdate}
+        pqrContext={{
+          content: pqr.content,
+          classification: effectiveClassification,
+          summary: pqr.summary,
+          channel: pqr.channel,
+        }}
+      />
 
       {/* Modify Classification Modal */}
       {showModifyModal && (

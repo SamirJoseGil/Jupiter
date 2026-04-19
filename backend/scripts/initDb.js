@@ -44,6 +44,10 @@ const initDatabase = async () => {
         id SERIAL PRIMARY KEY,
         content TEXT NOT NULL,
         channel VARCHAR(50) NOT NULL,
+        citizen_id VARCHAR(30),
+        neighborhood VARCHAR(120),
+        evidence_images JSONB DEFAULT '[]'::jsonb,
+        evidence_documents JSONB DEFAULT '[]'::jsonb,
         classification VARCHAR(100),
         confidence INTEGER,
         summary TEXT,
@@ -72,6 +76,46 @@ const initDatabase = async () => {
     await pool.query(`
       ALTER TABLE PQRSDf
       ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT NOW();
+    `);
+
+    await pool.query(`
+      ALTER TABLE PQRSDf
+      ADD COLUMN IF NOT EXISTS citizen_id VARCHAR(30);
+    `);
+
+    await pool.query(`
+      ALTER TABLE PQRSDf
+      ADD COLUMN IF NOT EXISTS neighborhood VARCHAR(120);
+    `);
+
+    await pool.query(`
+      ALTER TABLE PQRSDf
+      ADD COLUMN IF NOT EXISTS evidence_images JSONB DEFAULT '[]'::jsonb;
+    `);
+
+    await pool.query(`
+      ALTER TABLE PQRSDf
+      ADD COLUMN IF NOT EXISTS evidence_documents JSONB DEFAULT '[]'::jsonb;
+    `);
+
+    await pool.query(`
+      ALTER TABLE IF EXISTS pqrs
+      ADD COLUMN IF NOT EXISTS citizen_id VARCHAR(30);
+    `);
+
+    await pool.query(`
+      ALTER TABLE IF EXISTS pqrs
+      ADD COLUMN IF NOT EXISTS neighborhood VARCHAR(120);
+    `);
+
+    await pool.query(`
+      ALTER TABLE IF EXISTS pqrs
+      ADD COLUMN IF NOT EXISTS evidence_images JSONB DEFAULT '[]'::jsonb;
+    `);
+
+    await pool.query(`
+      ALTER TABLE IF EXISTS pqrs
+      ADD COLUMN IF NOT EXISTS evidence_documents JSONB DEFAULT '[]'::jsonb;
     `);
     
     console.log('PQRSDf table columns updated');
@@ -140,6 +184,57 @@ const initDatabase = async () => {
       );
     `);
     console.log('email_ingestions table ready');
+
+    // Create FAQ entries table
+    console.log('Creating faq_entries table...');
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS faq_entries (
+        id SERIAL PRIMARY KEY,
+        question TEXT NOT NULL,
+        answer TEXT NOT NULL,
+        keywords JSONB DEFAULT '[]'::jsonb,
+        usage_count INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+    console.log('faq_entries table ready');
+
+    // Create response templates table
+    console.log('Creating response_templates table...');
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS response_templates (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(120) NOT NULL,
+        body TEXT NOT NULL,
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+    console.log('response_templates table ready');
+
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_faq_entries_usage ON faq_entries(usage_count DESC);
+    `);
+
+    console.log('Creating pqr_relations table...');
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS pqr_relations (
+        source_pqr_id INTEGER NOT NULL,
+        related_pqr_id INTEGER NOT NULL,
+        score NUMERIC(5,4) NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW(),
+        CONSTRAINT pqr_relations_pk PRIMARY KEY (source_pqr_id, related_pqr_id)
+      );
+    `);
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_pqr_relations_source ON pqr_relations(source_pqr_id);
+    `);
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_pqr_relations_related ON pqr_relations(related_pqr_id);
+    `);
+    console.log('pqr_relations table ready');
 
     // Create indices for performance
     console.log('Creating indices...');

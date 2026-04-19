@@ -16,6 +16,8 @@ interface PQRSDfDf {
   summary?: string;
   topics?: string[];
   multi_dependency?: boolean;
+  evidence_images?: Array<{ url?: string | null; fileName?: string; key?: string }>;
+  evidence_documents?: Array<{ url?: string | null; fileName?: string; key?: string }>;
   status: string;
   created_at: string;
   assigned_department?: string;
@@ -31,6 +33,21 @@ export default function AdminDetailPage() {
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
+  const effectiveClassification = pqr?.classification || pqr?.assigned_department;
+  const channelLabel = pqr
+    ? ({
+        web: 'Formulario Web',
+        email: 'Correo',
+        chat: 'Chat',
+        phone: 'Teléfono',
+        social: 'Redes Sociales',
+        'official-web': 'Jupiter',
+        'official-whatsapp': 'Flor IA por WhatsApp',
+        'official-ai': 'Flor IA',
+        'official-email': 'Correo oficial',
+        'official-phone': 'Línea oficial',
+      } as Record<string, string>)[pqr.channel] || pqr.channel
+    : '';
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -123,7 +140,7 @@ export default function AdminDetailPage() {
           <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-lg">
             <p className="mb-4 text-lg font-medium text-red-600">Atención: {error || "Solicitud no encontrada"}</p>
             <button
-              onClick={() => navigate('/admin')}
+              onClick={() => navigate('/admin-dashboard')}
               className="rounded-xl border border-[#3366CC]/25 bg-[#3366CC]/10 px-6 py-2 font-semibold text-[#3366CC] transition hover:bg-[#3366CC]/15"
             >
               Volver al Panel
@@ -141,7 +158,7 @@ export default function AdminDetailPage() {
         <div className="mb-6">
           <div className="mb-4 flex flex-wrap items-center gap-2">
             <button
-              onClick={() => navigate('/admin')}
+              onClick={() => navigate('/admin-dashboard')}
               className="flex items-center gap-1 rounded-xl border border-[#3366CC]/25 bg-[#3366CC]/10 px-4 py-2 text-sm font-semibold text-[#3366CC] transition hover:bg-[#3366CC]/15"
             >
               ← Volver al Panel
@@ -235,36 +252,24 @@ export default function AdminDetailPage() {
             </div>
 
             {/* Classification Card */}
-            {pqr.classification && (
-              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                 <h3 className="mb-2 text-sm font-semibold text-slate-900">CLASIFICACIÓN</h3>
-                <p className="font-medium text-slate-700">{pqr.classification}</p>
+                <div className="flex items-center gap-2">
+                  <span className={`h-2.5 w-2.5 rounded-full ${effectiveClassification ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                  <p className="font-medium text-slate-700">{effectiveClassification || 'Sin clasificar'}</p>
+                </div>
                 {pqr.confidence !== undefined && (
-                  <div className="mt-3">
-                    <div className="flex justify-between items-center mb-1">
-                      <p className="text-xs text-slate-600">Confianza</p>
-                      <span className="text-xs font-semibold text-slate-700">{pqr.confidence}%</span>
-                    </div>
-                    <div className="h-2 w-full rounded-full bg-slate-200">
-                      <div
-                        className="h-2 rounded-full bg-gradient-to-r from-[#3366CC] to-amber-500 transition-all duration-300"
-                        style={{ width: `${pqr.confidence}%` }}
-                      ></div>
-                    </div>
+                  <div className="mt-2">
+                    <p className="text-xs text-slate-600">Confianza estimada: <span className="font-semibold text-slate-700">{pqr.confidence}%</span></p>
                   </div>
                 )}
               </div>
-            )}
 
             {/* Channel Card */}
             <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
               <h3 className="mb-2 text-sm font-semibold text-slate-900">CANAL</h3>
               <span className="inline-block rounded-md bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">
-                {pqr.channel === "web" && "Formulario Web"}
-                {pqr.channel === "email" && "Correo"}
-                {pqr.channel === "chat" && "Chat"}
-                {pqr.channel === "phone" && "Teléfono"}
-                {pqr.channel === "social" && "Redes Sociales"}
+                {channelLabel}
               </span>
             </div>
 

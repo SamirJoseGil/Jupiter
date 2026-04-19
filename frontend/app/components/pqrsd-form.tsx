@@ -10,7 +10,7 @@ interface SuggestionPreview {
 }
 
 interface PQRSDfDfFormProps {
-  onSuccess?: () => void;
+  onSuccess?: (payload?: { id: number; status: string }) => void;
 }
 
 const CONTACT_INTENTS: Array<{ label: string; hint: string; channel: FormChannel }> = [
@@ -23,18 +23,31 @@ const CONTACT_INTENTS: Array<{ label: string; hint: string; channel: FormChannel
 
 export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
   const [content, setContent] = useState("");
+  const [citizenId, setCitizenId] = useState("");
+  const [neighborhood, setNeighborhood] = useState("");
   const [channel, setChannel] = useState<FormChannel>("official-web");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [imageEvidence, setImageEvidence] = useState<File[]>([]);
+  const [documentEvidence, setDocumentEvidence] = useState<File[]>([]);
   const [suggestion, setSuggestion] = useState<SuggestionPreview | null>(null);
   const [suggestingLoading, setSuggestingLoading] = useState(false);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   const isOfficialChannel = channel.startsWith("official-");
   const officialConfig = isOfficialChannel ? OFFICIAL_CHANNEL_CONFIG[channel as keyof typeof OFFICIAL_CHANNEL_CONFIG] : null;
+  const shouldRedirectToExternal = isOfficialChannel && channel !== 'official-web';
 
   const contentLength = content.trim().length;
   const isValidContent = contentLength <= 2000;
+
+  const fileToDataUrl = (file: File) =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(new Error('No se pudo leer el archivo'));
+      reader.readAsDataURL(file);
+    });
 
   // Real-time suggestions with debounce
   useEffect(() => {
@@ -86,7 +99,7 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
     setLoading(true);
     setMessage("");
 
-    if (isOfficialChannel && officialConfig) {
+    if (shouldRedirectToExternal && officialConfig) {
       window.open(officialConfig.redirectUrl, "_blank", "noopener,noreferrer");
       setMessage(`Te redirigimos a ${officialConfig.label}. Si no se abrió automáticamente, usa el botón de acceso directo.`);
       setLoading(false);
@@ -101,23 +114,50 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
         return;
       }
 
+      const evidenceImagesPayload = await Promise.all(
+        imageEvidence.map(async (file) => ({
+          fileName: file.name,
+          contentType: file.type,
+          dataUrl: await fileToDataUrl(file),
+        }))
+      );
+
+      const evidenceDocumentsPayload = await Promise.all(
+        documentEvidence.map(async (file) => ({
+          fileName: file.name,
+          contentType: file.type,
+          dataUrl: await fileToDataUrl(file),
+        }))
+      );
+
       const response = await fetch(`${API_BASE_URL}/api/ingest`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ content, channel }),
+        body: JSON.stringify({
+          content,
+          channel: officialConfig?.ingestChannel || channel,
+          citizenId: citizenId.trim() || undefined,
+          neighborhood: neighborhood.trim() || undefined,
+          evidenceImages: evidenceImagesPayload,
+          evidenceDocuments: evidenceDocumentsPayload,
+        }),
       });
 
-      if (!response.ok) throw new Error("Error submitting PQRSDf");
+      if (!response.ok) throw new Error("Error submitting PQRSDF");
 
-      await response.json();
-      setMessage("PQRSDf enviada exitosamente!");
+      const data = await response.json();
+      setMessage(`PQRSDF enviada exitosamente. Radicado #${data?.pqr?.id ?? 'N/D'}`);
       setContent("");
+      setCitizenId("");
+      setNeighborhood("");
+      setImageEvidence([]);
+      setDocumentEvidence([]);
       setChannel("official-web");
 
       if (onSuccess) {
-        setTimeout(onSuccess, 1500);
+        setTimeout(() => onSuccess({ id: data?.pqr?.id, status: data?.pqr?.status }), 1200);
       }
     } catch (error) {
       setMessage("Error al enviar. Intenta de nuevo.");
@@ -179,7 +219,7 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
           </select>
         </div>
 
-        {officialConfig && (
+        {shouldRedirectToExternal && officialConfig && (
           <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
             <p className="text-sm font-semibold text-amber-900">{officialConfig.label}</p>
             <p className="mt-1 text-sm text-amber-800">{officialConfig.description}</p>
@@ -195,6 +235,33 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
         )}
 
         {/* Contenido */}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              C.C (opcional)
+            </label>
+            <input
+              value={citizenId}
+              onChange={(e) => setCitizenId(e.target.value)}
+              placeholder="Ej: 1234567890"
+              maxLength={30}
+              className="w-full rounded-xl border border-slate-300 bg-white/90 px-4 py-3 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Barrio (opcional)
+            </label>
+            <input
+              value={neighborhood}
+              onChange={(e) => setNeighborhood(e.target.value)}
+              placeholder="Ej: Laureles"
+              maxLength={120}
+              className="w-full rounded-xl border border-slate-300 bg-white/90 px-4 py-3 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30 focus:outline-none"
+            />
+          </div>
+        </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Tu solicitud, queja o reclamo
@@ -202,10 +269,10 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder={isOfficialChannel ? "Describe brevemente para tener un borrador antes de ir al canal oficial..." : "Cuéntanos qué necesitas..."}
+            placeholder={shouldRedirectToExternal ? "Describe brevemente para tener un borrador antes de ir al canal oficial..." : "Cuéntanos qué necesitas..."}
             rows={6}
             maxLength={2000}
-            required={!isOfficialChannel}
+            required
             className="w-full resize-none rounded-xl border border-slate-300 bg-white/90 px-4 py-3 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30 focus:outline-none"
           />
           <div className="mt-2 flex items-center justify-between text-xs">
@@ -213,6 +280,84 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
               Máximo 2000 caracteres
             </span>
             <span className="text-gray-500">{contentLength}/2000</span>
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label htmlFor="evidence-images" className="block text-sm font-medium text-gray-700 mb-2">
+              Evidencias en imagen (opcional)
+            </label>
+            <label
+              htmlFor="evidence-images"
+              className="group flex cursor-pointer items-center justify-between rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm transition hover:border-[#3366CC]/40 hover:bg-[#3366CC]/5"
+            >
+              <span className="font-medium text-slate-700 group-hover:text-[#3366CC]">Seleccionar imagenes</span>
+              <span className="rounded-lg border border-[#3366CC]/25 bg-[#3366CC]/10 px-3 py-1 text-xs font-semibold text-[#3366CC]">
+                Examinar
+              </span>
+            </label>
+            <input
+              id="evidence-images"
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={(event) => setImageEvidence(Array.from(event.target.files || []))}
+              className="hidden"
+            />
+            {imageEvidence.length > 0 && (
+              <div className="mt-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2">
+                <p className="text-xs font-semibold text-emerald-700">{imageEvidence.length} archivo(s) seleccionados</p>
+                <div className="mt-1 flex flex-wrap gap-1">
+                  {imageEvidence.slice(0, 3).map((file) => (
+                    <span key={file.name} className="rounded bg-white px-2 py-1 text-xs text-slate-600">
+                      {file.name}
+                    </span>
+                  ))}
+                  {imageEvidence.length > 3 && (
+                    <span className="rounded bg-white px-2 py-1 text-xs text-slate-600">+{imageEvidence.length - 3} mas</span>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="evidence-documents" className="block text-sm font-medium text-gray-700 mb-2">
+              Documentos (opcional)
+            </label>
+            <label
+              htmlFor="evidence-documents"
+              className="group flex cursor-pointer items-center justify-between rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm transition hover:border-[#3366CC]/40 hover:bg-[#3366CC]/5"
+            >
+              <span className="font-medium text-slate-700 group-hover:text-[#3366CC]">Seleccionar documentos</span>
+              <span className="rounded-lg border border-[#3366CC]/25 bg-[#3366CC]/10 px-3 py-1 text-xs font-semibold text-[#3366CC]">
+                Examinar
+              </span>
+            </label>
+            <input
+              id="evidence-documents"
+              type="file"
+              accept=".pdf,.doc,.docx,.txt,.xlsx,.xls,.ppt,.pptx"
+              multiple
+              onChange={(event) => setDocumentEvidence(Array.from(event.target.files || []))}
+              className="hidden"
+            />
+            {documentEvidence.length > 0 && (
+              <div className="mt-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2">
+                <p className="text-xs font-semibold text-emerald-700">{documentEvidence.length} archivo(s) seleccionados</p>
+                <div className="mt-1 flex flex-wrap gap-1">
+                  {documentEvidence.slice(0, 3).map((file) => (
+                    <span key={file.name} className="rounded bg-white px-2 py-1 text-xs text-slate-600">
+                      {file.name}
+                    </span>
+                  ))}
+                  {documentEvidence.length > 3 && (
+                    <span className="rounded bg-white px-2 py-1 text-xs text-slate-600">+{documentEvidence.length - 3} mas</span>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -279,10 +424,10 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
         {/* Botón */}
         <button
           type="submit"
-          disabled={loading || (!isValidContent && !isOfficialChannel)}
+          disabled={loading || !isValidContent}
           className="w-full rounded-xl bg-slate-900 py-3 font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
         >
-          {loading ? "Procesando..." : isOfficialChannel && officialConfig ? officialConfig.actionLabel : "Enviar Solicitud"}
+          {loading ? "Procesando..." : shouldRedirectToExternal && officialConfig ? officialConfig.actionLabel : "Enviar PQRSDF"}
         </button>
       </form>
 

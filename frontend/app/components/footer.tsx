@@ -30,7 +30,7 @@ export default function Footer() {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/#que-es" className="text-slate-300 hover:text-[#7FA2E8] transition">
-                  ¿Qué es una PQRSDf?
+                  ¿Qué es una PQRSDF?
                 </Link>
               </li>
               <li>
@@ -46,6 +46,16 @@ export default function Footer() {
               <li>
                 <Link to="/user" className="text-slate-300 hover:text-[#7FA2E8] transition">
                   Radicar ahora
+                </Link>
+              </li>
+              <li>
+                <Link to="/consultar-radicado" className="text-slate-300 hover:text-[#7FA2E8] transition">
+                  Consultar radicado
+                </Link>
+              </li>
+              <li>
+                <Link to="/preguntas-frecuentes" className="text-slate-300 hover:text-[#7FA2E8] transition">
+                  Preguntas frecuentes
                 </Link>
               </li>
             </ul>
@@ -83,20 +93,20 @@ export default function Footer() {
                 Jupiter
               </a>
               <a
-                href="https://www.medellin.gov.co/es/contactenos/"
+                href="/canales/flor-ia"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block text-sm text-slate-300 hover:text-[#7FA2E8] transition"
               >
-                WhatsApp Oficial
+                Flor IA por WhatsApp
               </a>
               <a
-                href="https://www.medellin.gov.co/es/contactenos/"
+                href="/canales/flor-ia"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block text-sm text-slate-300 hover:text-[#7FA2E8] transition"
               >
-                Asistente IA
+                Flor IA
               </a>
             </div>
           </div>

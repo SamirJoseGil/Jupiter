@@ -224,6 +224,92 @@ Response 200:
 }
 ```
 
+## FAQ
+
+### GET /api/faq
+Descripcion: Lista preguntas frecuentes para mostrar en secciones publicas.
+Auth: No
+
+Query params:
+- limit: integer opcional (1-30)
+
+Response 200:
+```json
+{
+  "total": 12,
+  "results": [
+    {
+      "id": 1,
+      "question": "Como radico una solicitud?",
+      "answer": "...",
+      "usage_count": 4
+    }
+  ]
+}
+```
+
+### GET /api/faq/search
+Descripcion: Busca preguntas frecuentes relacionadas.
+Auth: No
+
+Query params:
+- q: string (requerido)
+- limit: integer opcional (1-20)
+
+Response 200:
+```json
+{
+  "query": "como reportar huecos",
+  "total": 2,
+  "results": [
+    {
+      "id": 1,
+      "question": "Como reporto huecos en la via?",
+      "answer": "Puedes radicar tu solicitud...",
+      "score": 0.61
+    }
+  ]
+}
+```
+
+### POST /api/faq/ask
+Descripcion: Responde en base al banco FAQ y crea una nueva FAQ generica si no existe una coincidencia fuerte.
+Auth: No
+
+Request body:
+```json
+{
+  "question": "Tengo problemas con un semaforo dañado"
+}
+```
+
+Response 200 o 201:
+```json
+{
+  "source": "faq",
+  "confidence": 0.72,
+  "answer": "...",
+  "matched": { "id": 2, "question": "..." },
+  "related": [
+    { "id": 4, "question": "...", "score": 0.51 }
+  ],
+  "created": false
+}
+```
+
+### POST /api/faq
+Descripcion: Crea una FAQ manualmente.
+Auth: Si (admin)
+
+Request body:
+```json
+{
+  "question": "...",
+  "answer": "...",
+  "keywords": ["semaforo", "movilidad"]
+}
+```
+
 Errores:
 - 400: id invalido
 - 401: no autenticado

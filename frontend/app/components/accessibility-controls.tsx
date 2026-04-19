@@ -3,22 +3,26 @@ import { AccessibilityIcon } from "./icons";
 
 type AccessibilityPreferences = {
   highContrast: boolean;
-  largeText: boolean;
+  darkMode: boolean;
+  keyboardFocus: boolean;
   readableFont: boolean;
   reduceMotion: boolean;
   underlineLinks: boolean;
   visualAlerts: boolean;
+  fontScale: number;
 };
 
 const STORAGE_KEY = "jupiter_accessibility_preferences";
 
 const defaultPreferences: AccessibilityPreferences = {
   highContrast: false,
-  largeText: false,
+  darkMode: false,
+  keyboardFocus: true,
   readableFont: false,
   reduceMotion: false,
   underlineLinks: false,
   visualAlerts: false,
+  fontScale: 100,
 };
 
 export default function AccessibilityControls() {
@@ -44,11 +48,13 @@ export default function AccessibilityControls() {
 
     const body = window.document.body;
     body.classList.toggle("a11y-high-contrast", preferences.highContrast);
-    body.classList.toggle("a11y-large-text", preferences.largeText);
+    body.classList.toggle("a11y-dark-mode", preferences.darkMode);
+    body.classList.toggle("a11y-keyboard-focus", preferences.keyboardFocus);
     body.classList.toggle("a11y-readable-font", preferences.readableFont);
     body.classList.toggle("a11y-reduce-motion", preferences.reduceMotion);
     body.classList.toggle("a11y-underline-links", preferences.underlineLinks);
     body.classList.toggle("a11y-visual-alerts", preferences.visualAlerts);
+    body.style.setProperty('--a11y-font-scale', `${preferences.fontScale}%`);
 
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
   }, [preferences]);
@@ -63,6 +69,24 @@ export default function AccessibilityControls() {
   const resetPreferences = () => {
     setPreferences(defaultPreferences);
   };
+
+  useEffect(() => {
+    const enableKeyboardMode = () => {
+      document.body.classList.add('keyboard-navigation-active');
+    };
+
+    const disableKeyboardMode = () => {
+      document.body.classList.remove('keyboard-navigation-active');
+    };
+
+    window.addEventListener('keydown', enableKeyboardMode);
+    window.addEventListener('mousedown', disableKeyboardMode);
+
+    return () => {
+      window.removeEventListener('keydown', enableKeyboardMode);
+      window.removeEventListener('mousedown', disableKeyboardMode);
+    };
+  }, []);
 
   const readPage = () => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
@@ -115,12 +139,39 @@ export default function AccessibilityControls() {
             </label>
 
             <label className="flex cursor-pointer items-center justify-between rounded-lg border border-slate-200 px-3 py-2">
-              <span>Texto grande</span>
+              <span>Modo oscuro</span>
               <input
                 type="checkbox"
-                checked={preferences.largeText}
-                onChange={() => togglePreference("largeText")}
-                aria-label="Activar texto grande"
+                checked={preferences.darkMode}
+                onChange={() => togglePreference("darkMode")}
+                aria-label="Activar modo oscuro"
+              />
+            </label>
+
+            <label className="flex cursor-pointer items-center justify-between rounded-lg border border-slate-200 px-3 py-2">
+              <span>Foco visible para teclado</span>
+              <input
+                type="checkbox"
+                checked={preferences.keyboardFocus}
+                onChange={() => togglePreference("keyboardFocus")}
+                aria-label="Activar foco visible"
+              />
+            </label>
+
+            <label className="block rounded-lg border border-slate-200 px-3 py-2">
+              <span className="mb-2 block">Tamaño de texto: {preferences.fontScale}%</span>
+              <input
+                type="range"
+                min={90}
+                max={140}
+                step={5}
+                value={preferences.fontScale}
+                onChange={(event) => setPreferences((current) => ({
+                  ...current,
+                  fontScale: Number(event.target.value),
+                }))}
+                aria-label="Ajustar tamaño de texto"
+                className="w-full"
               />
             </label>
 

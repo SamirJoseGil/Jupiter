@@ -36,7 +36,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="flex items-center gap-3 sm:gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Panel administrativo</p>
-              <h1 className="text-2xl font-black text-slate-900">Jupiter</h1>
+              <Link to="/" className="group">
+                <h1 className="text-2xl font-black text-slate-900 transition-colors group-hover:text-[#3366CC]">Jupiter</h1>
+              </Link>
             </div>
             <div className="hidden h-10 w-px bg-slate-200 sm:block" />
             <div className="hidden md:flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2">

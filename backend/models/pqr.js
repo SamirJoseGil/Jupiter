@@ -68,7 +68,7 @@ class PQR {
     return getPreferredTable();
   }
 
-  static async create({ content, channel, assignedDepartment = null }) {
+  static async create({ content, channel, assignedDepartment = null, citizenId = null, neighborhood = null }) {
     const tableName = await this.getTableName();
 
     // Validation
@@ -84,14 +84,28 @@ class PQR {
       throw new Error(`Invalid channel. Must be one of: ${VALID_CHANNELS.join(', ')}`);
     }
 
+    if (citizenId && String(citizenId).length > 30) {
+      throw new Error('Citizen ID is too long');
+    }
+
+    if (neighborhood && String(neighborhood).length > 120) {
+      throw new Error('Neighborhood is too long');
+    }
+
     const query = `
-      INSERT INTO ${tableName} (content, channel, assigned_department, status, created_at)
-      VALUES ($1, $2, $3, 'pending', NOW())
+      INSERT INTO ${tableName} (content, channel, assigned_department, citizen_id, neighborhood, status, created_at)
+      VALUES ($1, $2, $3, $4, $5, 'pending', NOW())
       RETURNING *;
     `;
     
     try {
-      const result = await pool.query(query, [content.trim(), channel, assignedDepartment]);
+      const result = await pool.query(query, [
+        content.trim(),
+        channel,
+        assignedDepartment,
+        citizenId ? String(citizenId).trim() : null,
+        neighborhood ? String(neighborhood).trim() : null,
+      ]);
       return result.rows[0];
     } catch (error) {
       console.error('Create PQR error:', error);
@@ -202,6 +216,56 @@ class PQR {
     const query = `SELECT * FROM ${tableName} WHERE id = $1;`;
     const result = await pool.query(query, [id]);
     return result.rows[0];
+  }
+
+  static async attachEvidence(id, { images = [], documents = [] }) {
+    const tableName = await this.getTableName();
+
+    if (!Number.isInteger(parseInt(id))) {
+      throw new Error('Invalid PQR ID');
+    }
+
+    const query = `
+      UPDATE ${tableName}
+      SET evidence_images = COALESCE(evidence_images, '[]'::jsonb) || $1::jsonb,
+          evidence_documents = COALESCE(evidence_documents, '[]'::jsonb) || $2::jsonb,
+          updated_at = NOW()
+      WHERE id = $3
+      RETURNING *;
+    `;
+
+    const result = await pool.query(query, [
+      JSON.stringify(images || []),
+      JSON.stringify(documents || []),
+      id,
+    ]);
+
+    return result.rows[0];
+  }
+
+  static async getPublicStatusById(id, citizenId = null) {
+    const tableName = await this.getTableName();
+
+    if (!Number.isInteger(parseInt(id))) {
+      throw new Error('Invalid PQR ID');
+    }
+
+    let query = `
+      SELECT id, status, classification, assigned_department, created_at, updated_at, channel
+      FROM ${tableName}
+      WHERE id = $1
+    `;
+    const params = [id];
+
+    if (citizenId) {
+      query += ' AND citizen_id = $2';
+      params.push(String(citizenId).trim());
+    }
+
+    query += ' LIMIT 1;';
+
+    const result = await pool.query(query, params);
+    return result.rows[0] || null;
   }
 
   static async updateAnalysis(id, { classification, confidence, summary, topics, multi_dependency, assignedDepartment }) {

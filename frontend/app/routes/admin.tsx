@@ -1,16 +1,21 @@
 import { useEffect } from "react";
-import { Outlet, useNavigate } from "@remix-run/react";
+import { Outlet, useLocation, useNavigate } from "@remix-run/react";
 import { isAuthenticated } from "~/utils/auth";
 
 export default function AdminLayout() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    // Redirige al login si no está autenticado
     if (!isAuthenticated()) {
       navigate('/admin/login');
+      return;
     }
-  }, [navigate]);
+
+    if (location.pathname === '/admin') {
+      navigate('/admin-dashboard');
+    }
+  }, [navigate, location.pathname]);
 
   // Renderiza las sub-rutas (admin.$id, etc)
   return <Outlet />;

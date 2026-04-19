@@ -38,8 +38,8 @@ app.use(cors({
 }));
 
 // Body Parser Middleware
-app.use(express.json({ limit: '30mb' }));
-app.use(express.urlencoded({ limit: '30mb', extended: true }));
+app.use(express.json({ limit: '60mb' }));
+app.use(express.urlencoded({ limit: '60mb', extended: true }));
 
 // Swagger
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));

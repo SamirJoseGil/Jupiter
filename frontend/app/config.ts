@@ -53,11 +53,11 @@ export const OFFICIAL_CHANNEL_CONFIG: Record<OfficialChannel, {
   actionLabel: string;
 }> = {
   'official-whatsapp': {
-    label: 'WhatsApp Alcaldía de Medellín',
-    description: 'Canal conversacional oficial para atención rápida.',
-    redirectUrl: import.meta.env.VITE_MEDELLIN_WHATSAPP_URL || 'https://www.medellin.gov.co/es/contactenos/',
+    label: 'Flor IA por WhatsApp',
+    description: 'Canal conversacional para atencion automatizada y orientacion ciudadana.',
+    redirectUrl: import.meta.env.VITE_MEDELLIN_WHATSAPP_URL || '/canales/flor-ia',
     ingestChannel: 'social',
-    actionLabel: 'Abrir WhatsApp oficial'
+    actionLabel: 'Abrir Flor IA en WhatsApp'
   },
   'official-web': {
     label: 'Jupiter',
@@ -67,11 +67,11 @@ export const OFFICIAL_CHANNEL_CONFIG: Record<OfficialChannel, {
     actionLabel: 'Abrir Jupiter'
   },
   'official-ai': {
-    label: 'Asistente Virtual IA',
-    description: 'Asistencia guiada en línea para orientación ciudadana.',
-    redirectUrl: import.meta.env.VITE_MEDELLIN_AI_URL || 'https://www.medellin.gov.co/es/contactenos/',
+    label: 'Flor IA',
+    description: 'Asistencia guiada para orientacion ciudadana.',
+    redirectUrl: import.meta.env.VITE_MEDELLIN_AI_URL || '/canales/flor-ia',
     ingestChannel: 'chat',
-    actionLabel: 'Abrir asistente virtual'
+    actionLabel: 'Abrir Flor IA'
   },
   'official-email': {
     label: 'Correo oficial',
@@ -91,8 +91,8 @@ export const OFFICIAL_CHANNEL_CONFIG: Record<OfficialChannel, {
 
 export const FORM_CHANNELS: Array<{ value: FormChannel; label: string; type: 'internal' | 'official' }> = [
   { value: 'official-web', label: 'Jupiter', type: 'official' },
-  { value: 'official-whatsapp', label: 'WhatsApp Alcaldía de Medellín', type: 'official' },
-  { value: 'official-ai', label: 'Asistente Virtual IA', type: 'official' },
+  { value: 'official-whatsapp', label: 'Flor IA por WhatsApp', type: 'official' },
+  { value: 'official-ai', label: 'Flor IA', type: 'official' },
   { value: 'official-email', label: 'Correo oficial Alcaldía', type: 'official' },
   { value: 'official-phone', label: 'Línea Telefónica Oficial', type: 'official' }
 ];
