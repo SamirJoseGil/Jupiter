@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { API_BASE_URL, CHANNELS, DEPARTMENTS } from "~/config";
+import { API_BASE_URL, CHANNELS } from "~/config";
 
 type Channel = "web" | "email" | "chat" | "phone" | "social";
 
@@ -110,8 +110,9 @@ export default function PQRSDForm({ onSuccess }: PQRSDFormProps) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-8 max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">Envia tu Solicitud</h2>
+    <div className="mx-auto max-w-3xl rounded-3xl border border-white/30 bg-white/70 p-8 shadow-2xl backdrop-blur-xl">
+      <h2 className="mb-2 text-3xl font-black text-slate-900">Envia tu Solicitud</h2>
+      <p className="mb-6 text-sm text-slate-600">Canal ciudadano para peticiones, quejas, reclamos y sugerencias.</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Canal */}
@@ -122,7 +123,7 @@ export default function PQRSDForm({ onSuccess }: PQRSDFormProps) {
           <select
             value={channel}
             onChange={(e) => setChannel(e.target.value as Channel)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full rounded-xl border border-slate-300 bg-white/90 px-4 py-3 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30 focus:outline-none"
           >
             {CHANNELS.map((item) => (
               <option key={item.value} value={item.value}>
@@ -144,7 +145,7 @@ export default function PQRSDForm({ onSuccess }: PQRSDFormProps) {
             rows={6}
             maxLength={2000}
             required
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+            className="w-full resize-none rounded-xl border border-slate-300 bg-white/90 px-4 py-3 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30 focus:outline-none"
           />
           <div className="mt-2 flex items-center justify-between text-xs">
             <span className={isValidContent ? "text-gray-500" : "text-red-600"}>
@@ -156,7 +157,7 @@ export default function PQRSDForm({ onSuccess }: PQRSDFormProps) {
 
         {/* Real-time AI Suggestion */}
         {suggestion && contentLength >= 50 && !message && (
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-lg p-4">
+            <div className="rounded-2xl border border-cyan-300/40 bg-gradient-to-r from-cyan-50/80 to-amber-50/80 p-4">
             <div className="flex items-start gap-3">
               <span className="text-2xl">🤖</span>
               <div className="flex-1">
@@ -173,7 +174,7 @@ export default function PQRSDForm({ onSuccess }: PQRSDFormProps) {
                     </div>
                     <div className="w-full bg-blue-200 rounded-full h-2">
                       <div
-                        className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all"
+                        className="h-2 rounded-full bg-gradient-to-r from-cyan-500 to-amber-500 transition-all"
                         style={{ width: `${suggestion.confidence}%` }}
                       ></div>
                     </div>
@@ -196,8 +197,8 @@ export default function PQRSDForm({ onSuccess }: PQRSDFormProps) {
                 <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-blue-600"></div>
               )}
             </div>
-          </div>
-        )}
+            </div>
+          )}
 
         {/* Loading suggestion message */}
         {suggestingLoading && contentLength >= 50 && (
@@ -211,7 +212,7 @@ export default function PQRSDForm({ onSuccess }: PQRSDFormProps) {
         <button
           type="submit"
           disabled={loading || !isValidContent}
-          className="w-full bg-blue-600 text-white py-3 rounded-md font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
+          className="w-full rounded-xl bg-slate-900 py-3 font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
         >
           {loading ? "Enviando..." : "Enviar Solicitud"}
         </button>
@@ -219,13 +220,13 @@ export default function PQRSDForm({ onSuccess }: PQRSDFormProps) {
 
       {/* Mensaje de estado */}
       {message && (
-        <div className="mt-4 p-4 bg-gray-50 rounded-md text-center text-sm font-medium text-gray-800">
+        <div className="mt-4 rounded-xl bg-slate-100 p-4 text-center text-sm font-medium text-slate-800">
           {message}
         </div>
       )}
 
       {/* Disclaimer */}
-      <p className="text-xs text-gray-500 mt-4 text-center">
+      <p className="mt-4 text-center text-xs text-slate-500">
         Tu solicitud será revisada por nuestro equipo dentro de 15 días hábiles.
       </p>
     </div>
