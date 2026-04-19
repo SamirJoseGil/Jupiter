@@ -1,9 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { API_BASE_URL, CHANNELS } from "~/config";
+import { API_BASE_URL, FORM_CHANNELS, OFFICIAL_CHANNEL_CONFIG, type FormChannel } from "~/config";
 import ClientOnly from "./client-only";
-
-type Channel = "web" | "email" | "chat" | "phone" | "social";
 
 interface SuggestionPreview {
   classification: string;
@@ -15,14 +13,25 @@ interface PQRSDFormProps {
   onSuccess?: () => void;
 }
 
+const CONTACT_INTENTS: Array<{ label: string; hint: string; channel: FormChannel }> = [
+  { label: "Radicar en portal", hint: "Formulario y trazabilidad oficial", channel: "official-web" },
+  { label: "Chatear por WhatsApp", hint: "Respuesta rápida por mensajería", channel: "official-whatsapp" },
+  { label: "Usar asistente IA", hint: "Orientación guiada automática", channel: "official-ai" },
+  { label: "Enviar por correo", hint: "Ideal para adjuntos", channel: "official-email" },
+  { label: "Llamar por teléfono", hint: "Atención directa", channel: "official-phone" },
+];
+
 export default function PQRSDForm({ onSuccess }: PQRSDFormProps) {
   const [content, setContent] = useState("");
-  const [channel, setChannel] = useState<Channel>("web");
+  const [channel, setChannel] = useState<FormChannel>("official-web");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [suggestion, setSuggestion] = useState<SuggestionPreview | null>(null);
   const [suggestingLoading, setSuggestingLoading] = useState(false);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+
+  const isOfficialChannel = channel.startsWith("official-");
+  const officialConfig = isOfficialChannel ? OFFICIAL_CHANNEL_CONFIG[channel as keyof typeof OFFICIAL_CHANNEL_CONFIG] : null;
 
   const contentLength = content.trim().length;
   const isValidContent = contentLength >= 20 && contentLength <= 2000;
@@ -77,6 +86,13 @@ export default function PQRSDForm({ onSuccess }: PQRSDFormProps) {
     setLoading(true);
     setMessage("");
 
+    if (isOfficialChannel && officialConfig) {
+      window.open(officialConfig.redirectUrl, "_blank", "noopener,noreferrer");
+      setMessage(`Te redirigimos a ${officialConfig.label}. Si no se abrió automáticamente, usa el botón de acceso directo.`);
+      setLoading(false);
+      return;
+    }
+
     try {
       // VALIDAR PRIMERO antes de enviar al servidor
       if (!isValidContent) {
@@ -98,7 +114,7 @@ export default function PQRSDForm({ onSuccess }: PQRSDFormProps) {
       await response.json();
       setMessage("PQRSD enviada exitosamente!");
       setContent("");
-      setChannel("web");
+      setChannel("official-web");
 
       if (onSuccess) {
         setTimeout(onSuccess, 1500);
@@ -122,24 +138,61 @@ export default function PQRSDForm({ onSuccess }: PQRSDFormProps) {
         <h2 className="mb-2 text-3xl font-black text-slate-900">Envia tu Solicitud</h2>
         <p className="mb-6 text-sm text-slate-600">Canal ciudadano para peticiones, quejas, reclamos y sugerencias.</p>
 
+        <div className="mb-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <p className="text-sm font-semibold text-slate-900">¿Cómo deseas contactarnos?</p>
+          <p className="mt-1 text-xs text-slate-600">Selecciona una opción y te llevamos al canal oficial adecuado.</p>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            {CONTACT_INTENTS.map((intent) => (
+              <button
+                key={intent.channel}
+                type="button"
+                onClick={() => setChannel(intent.channel)}
+                className={`rounded-xl border px-3 py-3 text-left transition ${
+                  channel === intent.channel
+                    ? "border-cyan-300 bg-cyan-50"
+                    : "border-slate-300 bg-white hover:border-cyan-200 hover:bg-slate-50"
+                }`}
+              >
+                <p className="text-sm font-semibold text-slate-900">{intent.label}</p>
+                <p className="text-xs text-slate-600">{intent.hint}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Canal */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Canal de entrada
+            Canal oficial de atención
           </label>
           <select
             value={channel}
-            onChange={(e) => setChannel(e.target.value as Channel)}
+            onChange={(e) => setChannel(e.target.value as FormChannel)}
             className="w-full rounded-xl border border-slate-300 bg-white/90 px-4 py-3 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30 focus:outline-none"
           >
-            {CHANNELS.map((item) => (
+            {FORM_CHANNELS.map((item) => (
               <option key={item.value} value={item.value}>
                 {item.label}
               </option>
             ))}
           </select>
         </div>
+
+        {officialConfig && (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+            <p className="text-sm font-semibold text-amber-900">{officialConfig.label}</p>
+            <p className="mt-1 text-sm text-amber-800">{officialConfig.description}</p>
+            <p className="mt-1 text-xs font-medium text-amber-700">Se abrirá en una nueva pestaña o app oficial.</p>
+            <button
+              type="button"
+              onClick={() => window.open(officialConfig.redirectUrl, "_blank", "noopener,noreferrer")}
+              className="mt-3 rounded-xl border border-amber-300 bg-white px-4 py-2 text-sm font-semibold text-amber-800 transition hover:bg-amber-100"
+            >
+              {officialConfig.actionLabel}
+            </button>
+          </div>
+        )}
 
         {/* Contenido */}
         <div>
@@ -149,10 +202,10 @@ export default function PQRSDForm({ onSuccess }: PQRSDFormProps) {
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="Cuéntanos qué necesitas..."
+            placeholder={isOfficialChannel ? "Describe brevemente para tener un borrador antes de ir al canal oficial..." : "Cuéntanos qué necesitas..."}
             rows={6}
             maxLength={2000}
-            required
+            required={!isOfficialChannel}
             className="w-full resize-none rounded-xl border border-slate-300 bg-white/90 px-4 py-3 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30 focus:outline-none"
           />
           <div className="mt-2 flex items-center justify-between text-xs">
@@ -173,7 +226,7 @@ export default function PQRSDForm({ onSuccess }: PQRSDFormProps) {
               className="rounded-2xl border border-cyan-200 bg-gradient-to-r from-cyan-50 to-amber-50 p-4"
             >
             <div className="flex items-start gap-3">
-              <span className="text-2xl">🤖</span>
+              <span className="text-sm font-semibold text-slate-700">IA</span>
               <div className="flex-1">
                 <p className="text-sm font-semibold text-blue-900">Sugerencia IA en Tiempo Real</p>
                 <div className="mt-2 space-y-2">
@@ -226,16 +279,16 @@ export default function PQRSDForm({ onSuccess }: PQRSDFormProps) {
         {/* Botón */}
         <button
           type="submit"
-          disabled={loading || !isValidContent}
+          disabled={loading || (!isValidContent && !isOfficialChannel)}
           className="w-full rounded-xl bg-slate-900 py-3 font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
         >
-          {loading ? "Enviando..." : "Enviar Solicitud"}
+          {loading ? "Procesando..." : isOfficialChannel && officialConfig ? officialConfig.actionLabel : "Enviar Solicitud"}
         </button>
       </form>
 
       {/* Mensaje de estado */}
       {message && (
-        <div className="mt-4 rounded-xl bg-slate-100 p-4 text-center text-sm font-medium text-slate-800">
+        <div aria-live="polite" className="mt-4 rounded-xl bg-slate-100 p-4 text-center text-sm font-medium text-slate-800">
           {message}
         </div>
       )}

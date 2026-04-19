@@ -16,7 +16,7 @@ export default function AdminLoginPage() {
 
     try {
       await login(email, password);
-      navigate('/admin');
+      navigate('/admin-dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
@@ -25,22 +25,37 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+    <div className="min-h-screen bg-white text-slate-900">
+      <main id="main-content" className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-12 sm:px-8 lg:px-12">
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute left-[-10%] top-[-20%] h-96 w-96 rounded-full bg-cyan-500/10 blur-3xl" />
+          <div className="absolute right-[-10%] top-[20%] h-[30rem] w-[30rem] rounded-full bg-amber-400/10 blur-3xl" />
+        </div>
+
+        <div className="relative w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-lg">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Jupiter</h1>
-          <p className="text-gray-600">Panel de Administración</p>
+          <h1 className="mb-2 text-3xl font-black text-slate-900">Jupiter</h1>
+          <p className="text-slate-600">Panel de Administración</p>
+        </div>
+
+        <div className="mb-6">
+          <button
+            onClick={() => navigate('/')}
+            className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+          >
+            ← Volver al Inicio
+          </button>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-700">
               {error}
             </div>
           )}
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="email" className="mb-1 block text-sm font-medium text-slate-700">
               Correo
             </label>
             <input
@@ -49,14 +64,14 @@ export default function AdminLoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full rounded-xl border border-slate-300 bg-white/90 px-4 py-3 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
               placeholder="admin@alcaldia.gov.co"
               disabled={loading}
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="password" className="mb-1 block text-sm font-medium text-slate-700">
               Contraseña
             </label>
             <input
@@ -65,7 +80,7 @@ export default function AdminLoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full rounded-xl border border-slate-300 bg-white/90 px-4 py-3 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
               placeholder="Ingresa tu contraseña"
               disabled={loading}
             />
@@ -74,21 +89,22 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium py-2 px-4 rounded-lg transition"
+            className="w-full rounded-xl border border-cyan-300 bg-cyan-50 px-4 py-3 font-semibold text-cyan-700 transition hover:bg-cyan-100 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400"
           >
             {loading ? 'Ingresando...' : 'Ingresar'}
           </button>
         </form>
 
-        <div className="mt-6 pt-6 border-t border-gray-200">
-          <p className="text-sm text-gray-600 text-center">
+        <div className="mt-6 border-t border-slate-200 pt-6">
+          <p className="text-center text-sm text-slate-600">
             No tienes cuenta de admin?
           </p>
-          <p className="text-sm text-gray-500 text-center mt-2">
+          <p className="mt-2 text-center text-sm text-slate-500">
             Contacta al administrador del sistema
           </p>
         </div>
+        </div>
+      </main>
       </div>
-    </div>
   );
 }

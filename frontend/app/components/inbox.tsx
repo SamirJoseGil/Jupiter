@@ -27,13 +27,13 @@ const getChannelLabel = (channel: string) => {
 
 const getChannelIcon = (channel: string) => {
   const icons: Record<string, string> = {
-    web: "🌐",
-    email: "📧",
-    chat: "💬",
-    phone: "☎️",
-    social: "📱",
+    web: "WEB",
+    email: "COR",
+    chat: "CHA",
+    phone: "TEL",
+    social: "SOC",
   };
-  return icons[channel] || "📄";
+  return icons[channel] || "DOC";
 };
 
 const getStatusColor = (status: string) => {
@@ -81,7 +81,7 @@ export default function Inbox({ pqrs }: InboxProps) {
         >
           <div className="flex items-start gap-4">
             {/* Canal Icon */}
-            <div className="text-3xl flex-shrink-0">{getChannelIcon(pqr.channel)}</div>
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-700">{getChannelIcon(pqr.channel)}</div>
 
             {/* Contenido */}
             <div className="flex-1 min-w-0">

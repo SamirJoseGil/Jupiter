@@ -29,10 +29,10 @@ export default function Toast({ message, type = "info", duration = 4000, onClose
   };
 
   const icons = {
-    success: "✓",
-    error: "✕",
-    warning: "⚠",
-    info: "ℹ",
+    success: "OK",
+    error: "X",
+    warning: "!",
+    info: "i",
   };
 
   return (

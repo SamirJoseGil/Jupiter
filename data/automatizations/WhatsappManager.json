@@ -1,0 +1,103 @@
+{
+  "name": "PQRS WhatsApp Clasificador",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "whatsapp-pqrs",
+        "httpMethod": "POST"
+      },
+      "id": "Webhook",
+      "name": "Webhook WhatsApp",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "body",
+              "value": "={{$json.body || $json.message || $json.text}}"
+            },
+            {
+              "name": "from",
+              "value": "={{$json.from || $json.phone}}"
+            }
+          ]
+        }
+      },
+      "id": "Set",
+      "name": "Normalizar Input",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [400, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
+        "jsonParameters": true,
+        "bodyParametersJson": "={\n  \"contents\": [\n    {\n      \"role\": \"user\",\n      \"parts\": [\n        {\n          \"text\": \"Eres un sistema experto de clasificación de PQRS para la Alcaldía de Medellín.\\n\\nClasifica el siguiente mensaje de WhatsApp:\\n\\nMensaje: {{$json.body}}\\n\\nResponde SOLO en JSON con:\\n{ classification, assigned_department, status, summary, confidence }\"\n        }\n      ]\n    }\n  ]\n}"
+      },
+      "id": "Gemini",
+      "name": "Clasificar IA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [600, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "// parse robusto\nlet raw = $json?.content?.parts?.[0]?.text || \"\";\n\nlet clean = raw\n  .replace(/```json/gi, \"\")\n  .replace(/```/g, \"\")\n  .trim();\n\nconst match = clean.match(/\\{[\\s\\S]*\\}/);\n\nlet parsed = {};\n\ntry {\n  parsed = JSON.parse(match[0]);\n} catch (e) {\n  return [{ json: { error: true, raw } }];\n}\n\nparsed.confidence = Number(parsed.confidence) || 0;\nparsed.status = parsed.status?.toUpperCase();\n\nreturn [{ json: { ...$json, ...parsed } }];"
+      },
+      "id": "Parse",
+      "name": "Parse JSON",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [800, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO pqrs (content, channel, classification, assigned_department, status, summary, confidence) VALUES ($1,$2,$3,$4,$5,$6,$7)",
+        "additionalFields": {
+          "queryParams": [
+            "={{$json.body}}",
+            "whatsapp",
+            "={{$json.classification}}",
+            "={{$json.assigned_department}}",
+            "={{$json.status}}",
+            "={{$json.summary}}",
+            "={{$json.confidence}}"
+          ]
+        }
+      },
+      "id": "Postgres",
+      "name": "Guardar en DB",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [1000, 300],
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_DB_ID",
+          "name": "Neon DB"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook WhatsApp": {
+      "main": [[{ "node": "Normalizar Input", "type": "main", "index": 0 }]]
+    },
+    "Normalizar Input": {
+      "main": [[{ "node": "Clasificar IA", "type": "main", "index": 0 }]]
+    },
+    "Clasificar IA": {
+      "main": [[{ "node": "Parse JSON", "type": "main", "index": 0 }]]
+    },
+    "Parse JSON": {
+      "main": [[{ "node": "Guardar en DB", "type": "main", "index": 0 }]]
+    }
+  }
+}

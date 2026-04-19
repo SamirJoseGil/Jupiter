@@ -6,3 +6,43 @@ html,
 body {
   @apply bg-white;
 }
+
+body {
+  font-family: "Inter", sans-serif;
+}
+
+:focus-visible {
+  outline: 3px solid #0891b2;
+  outline-offset: 3px;
+}
+
+body.a11y-high-contrast {
+  filter: contrast(1.18);
+}
+
+body.a11y-large-text {
+  font-size: 112.5%;
+}
+
+body.a11y-readable-font {
+  font-family: "Atkinson Hyperlegible", "Inter", sans-serif;
+}
+
+body.a11y-underline-links a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+body.a11y-visual-alerts [aria-live] {
+  border: 2px solid #0e7490;
+  background: #ecfeff;
+}
+
+body.a11y-reduce-motion *,
+body.a11y-reduce-motion *::before,
+body.a11y-reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}

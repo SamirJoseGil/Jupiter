@@ -4,6 +4,7 @@ import { API_BASE_URL, DEPARTMENTS } from "~/config";
 import { getHeaders } from "~/utils/auth";
 import ResponseDraft from "~/components/response-draft";
 import Toast from "~/components/toast-notification";
+import { InfoIcon } from "~/components/icons";
 
 interface DetailViewProps {
   pqr: {
@@ -141,7 +142,7 @@ export default function DetailView({ pqr, onStatusUpdate }: DetailViewProps) {
     <div className="space-y-6">
       {/* Main Content */}
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">📝 Contenido</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-4">Contenido</h2>
         <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
           <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
             {pqr.content}
@@ -212,7 +213,7 @@ export default function DetailView({ pqr, onStatusUpdate }: DetailViewProps) {
       {/* Multi-dependency Alert */}
       {pqr.multi_dependency && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-          <span className="text-lg">⚠️</span>
+          <InfoIcon className="h-5 w-5 text-red-700 mt-0.5" />
           <div>
             <p className="font-semibold text-red-900">Múltiples Dependencias</p>
             <p className="text-sm text-red-700 mt-1">Requiere coordinación inter-institucional</p>
@@ -222,27 +223,27 @@ export default function DetailView({ pqr, onStatusUpdate }: DetailViewProps) {
 
       {/* Action Buttons */}
       <div className="bg-white rounded-lg shadow-md p-6 space-y-3">
-        <h3 className="font-semibold text-gray-900 mb-4">🎯 Acciones</h3>
+        <h3 className="font-semibold text-gray-900 mb-4">Acciones</h3>
 
         <button
           onClick={handleAcceptClassification}
           className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition font-medium flex items-center justify-center gap-2"
         >
-          <span>✓</span> Aceptar Clasificación
+          <span>Aceptar</span> Clasificación
         </button>
 
         <button
           onClick={() => setShowModifyModal(true)}
           className="w-full px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition font-medium flex items-center justify-center gap-2"
         >
-          <span>✏️</span> Modificar Clasificación
+          <span>Editar</span> Clasificación
         </button>
 
         <button
           onClick={() => setShowAssignModal(true)}
           className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition font-medium flex items-center justify-center gap-2"
         >
-          <span>👤</span> Asignar a Dependencia
+          <span>Asignar</span> a Dependencia
         </button>
       </div>
 

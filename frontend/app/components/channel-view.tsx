@@ -31,10 +31,10 @@ export default function ChannelView({ pqrs, onViewDetail }: ChannelViewProps) {
   const webPqrs = pqrs.filter(p => p.channel === "web");
 
   const channels = [
-    { id: "all", label: "Todas", count: pqrs.length, icon: "📋" },
-    { id: "email", label: "📧 Email", count: emailPqrs.length, icon: "📧" },
-    { id: "chat", label: "💬 Chat", count: chatPqrs.length, icon: "💬" },
-    { id: "web", label: "🌐 Web", count: webPqrs.length, icon: "🌐" },
+    { id: "all", label: "Todas", count: pqrs.length, tag: "TODAS" },
+    { id: "email", label: "Correo", count: emailPqrs.length, tag: "CORREO" },
+    { id: "chat", label: "Chat", count: chatPqrs.length, tag: "CHAT" },
+    { id: "web", label: "Web", count: webPqrs.length, tag: "WEB" },
   ];
 
   const renderEmailStyle = (pqr: PQRSD) => (
@@ -77,7 +77,7 @@ export default function ChannelView({ pqrs, onViewDetail }: ChannelViewProps) {
       {pqr.classification && (
         <div className="bg-blue-50 p-2 rounded text-xs mb-3">
           <p className="text-blue-900">
-            🤖 <strong>IA:</strong> {pqr.classification}
+            <strong>IA:</strong> {pqr.classification}
             {pqr.confidence && ` (${Math.round(pqr.confidence * 100)}%)`}
           </p>
         </div>
@@ -121,7 +121,7 @@ export default function ChannelView({ pqrs, onViewDetail }: ChannelViewProps) {
           <div className="flex-1 max-w-xs">
             <div className="bg-blue-500 text-white px-4 py-2 rounded-lg rounded-br-none">
               <p className="text-sm">
-                🤖 <strong>Clasificación:</strong> {pqr.classification}
+                <strong>Clasificación:</strong> {pqr.classification}
               </p>
               {pqr.confidence && (
                 <p className="text-xs text-blue-100 mt-1">
@@ -208,7 +208,8 @@ export default function ChannelView({ pqrs, onViewDetail }: ChannelViewProps) {
                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
-            {ch.icon} {ch.label}
+            <span className="mr-2 inline-flex rounded-full bg-black/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide">{ch.tag}</span>
+            {ch.label}
             <span className="ml-2 text-xs bg-opacity-20 bg-gray-900 px-2 py-0.5 rounded-full">
               {ch.count}
             </span>
@@ -248,7 +249,7 @@ export default function ChannelView({ pqrs, onViewDetail }: ChannelViewProps) {
               {emailPqrs.length > 0 && (
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    📧 Email ({emailPqrs.length})
+                    Correo ({emailPqrs.length})
                   </h3>
                   <div className="space-y-2">
                     {emailPqrs.slice(0, 3).map(renderEmailStyle)}
@@ -264,7 +265,7 @@ export default function ChannelView({ pqrs, onViewDetail }: ChannelViewProps) {
               {chatPqrs.length > 0 && (
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    💬 Chat ({chatPqrs.length})
+                    Chat ({chatPqrs.length})
                   </h3>
                   <div className="bg-gray-50 rounded-lg p-4">
                     {chatPqrs.slice(0, 2).map(renderChatStyle)}
@@ -280,7 +281,7 @@ export default function ChannelView({ pqrs, onViewDetail }: ChannelViewProps) {
               {webPqrs.length > 0 && (
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    🌐 Web ({webPqrs.length})
+                    Web ({webPqrs.length})
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {webPqrs.slice(0, 2).map(renderWebStyle)}

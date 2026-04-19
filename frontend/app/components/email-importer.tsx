@@ -80,7 +80,7 @@ export default function EmailImporter() {
       const data = await response.json();
       setToast({
         type: "success",
-        message: `✓ Email importado (ID: ${data.id}, Clasificación: ${data.classification})`,
+        message: `Email importado (ID: ${data.id}, Clasificación: ${data.classification})`,
       });
 
       // Reset form
@@ -105,7 +105,7 @@ export default function EmailImporter() {
   return (
     <div className="bg-white rounded-lg shadow-md p-8 max-w-3xl mx-auto">
       <h2 className="text-2xl font-bold mb-6 text-gray-800">
-        📧 Importar desde Email
+        Importar desde Email
       </h2>
 
       <div className="space-y-4">
@@ -174,7 +174,7 @@ Tengo un problema grave con los huecos en la avenida principal...`}
             disabled={loading || !emailText.trim()}
             className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition flex items-center justify-center gap-2"
           >
-            👁️ Preview
+            Vista previa
           </button>
 
           <button
@@ -184,10 +184,10 @@ Tengo un problema grave con los huecos en la avenida principal...`}
           >
             {loading ? (
               <>
-                <span className="animate-spin">⚙️</span> Importando...
+                <span className="animate-spin">...</span> Importando...
               </>
             ) : (
-              <>📨 Importar como PQRSD</>
+              <>Importar como PQRSD</>
             )}
           </button>
 

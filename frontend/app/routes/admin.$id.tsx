@@ -5,6 +5,7 @@ import DetailView from "~/components/detail-view";
 import Toast from "~/components/toast-notification";
 import { isAuthenticated, getHeaders } from "~/utils/auth";
 import { API_BASE_URL } from "~/config";
+import { InfoIcon } from "~/components/icons";
 
 interface PQRSD {
   id: number;
@@ -107,8 +108,8 @@ export default function AdminDetailPage() {
       <AdminLayout>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mb-4"></div>
-            <p className="text-gray-600">Cargando solicitud...</p>
+            <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-t-2 border-cyan-600"></div>
+            <p className="text-slate-600">Cargando solicitud...</p>
           </div>
         </div>
       </AdminLayout>
@@ -119,11 +120,11 @@ export default function AdminDetailPage() {
     return (
       <AdminLayout>
         <div className="flex-1 flex items-center justify-center px-4">
-          <div className="text-center">
-            <p className="text-red-600 font-medium text-lg mb-4">⚠️ {error || "Solicitud no encontrada"}</p>
+          <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-lg">
+            <p className="mb-4 text-lg font-medium text-red-600">Atención: {error || "Solicitud no encontrada"}</p>
             <button
               onClick={() => navigate('/admin')}
-              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+              className="rounded-xl border border-cyan-300 bg-cyan-50 px-6 py-2 font-semibold text-cyan-700 transition hover:bg-cyan-100"
             >
               Volver al Panel
             </button>
@@ -138,18 +139,26 @@ export default function AdminDetailPage() {
       <div className="flex-1 max-w-6xl w-full mx-auto px-4 py-6">
         {/* Header with navigation */}
         <div className="mb-6">
-          <button
-            onClick={() => navigate('/admin')}
-            className="text-blue-600 hover:text-blue-700 font-medium text-sm mb-4 flex items-center gap-1"
-          >
-            ← Volver al Panel
-          </button>
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => navigate('/admin')}
+              className="flex items-center gap-1 rounded-xl border border-cyan-300 bg-cyan-50 px-4 py-2 text-sm font-semibold text-cyan-700 transition hover:bg-cyan-100"
+            >
+              ← Volver al Panel
+            </button>
+            <button
+              onClick={() => navigate('/')}
+              className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+              Ir al Inicio
+            </button>
+          </div>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-3xl font-black text-slate-900">
                 Solicitud #{pqr.id}
               </h1>
-              <p className="text-gray-600 mt-1">
+              <p className="mt-1 text-slate-600">
                 Creada: {new Date(pqr.created_at).toLocaleDateString("es-CO", { 
                   weekday: 'short', 
                   year: 'numeric', 
@@ -165,18 +174,18 @@ export default function AdminDetailPage() {
 
         {/* Analyze Banner */}
         {pqr.status === "pending" && !pqr.classification && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <div className="mb-6 rounded-2xl border border-cyan-200 bg-cyan-50 p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <span className="text-2xl">🤖</span>
-                <p className="text-blue-900 font-medium">
+                <InfoIcon className="h-6 w-6 text-cyan-700" />
+                <p className="font-medium text-cyan-900">
                   Esta solicitud aún no ha sido analizada. Usa IA para clasificarla automáticamente.
                 </p>
               </div>
               <button
                 onClick={handleAnalyze}
                 disabled={analyzing}
-                className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 transition font-medium whitespace-nowrap"
+                className="whitespace-nowrap rounded-xl border border-cyan-300 bg-white px-6 py-2 font-semibold text-cyan-700 transition hover:bg-cyan-100 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400"
               >
                 {analyzing ? "Analizando..." : "Analizar IA"}
               </button>
@@ -194,7 +203,7 @@ export default function AdminDetailPage() {
           {/* Sidebar - 1 column */}
           <div className="space-y-4">
             {/* Status Card */}
-            <div className="bg-white rounded-lg shadow-md p-4 border-l-4" style={{
+            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm" style={{
               borderLeftColor: {
                 pending: "#fbbf24",
                 analyzed: "#60a5fa",
@@ -202,7 +211,7 @@ export default function AdminDetailPage() {
                 resolved: "#34d399",
               }[pqr.status] || "#d1d5db"
             }}>
-              <h3 className="font-semibold text-gray-900 mb-3 text-sm">ESTADO</h3>
+              <h3 className="mb-3 text-sm font-semibold text-slate-900">ESTADO</h3>
               <div className="inline-block px-3 py-1 rounded-full text-sm font-medium"
                    style={{
                      backgroundColor: {
@@ -218,27 +227,27 @@ export default function AdminDetailPage() {
                        resolved: "#065f46",
                      }[pqr.status] || "#111827",
                    }}>
-                {pqr.status === "pending" && "📋 Pendiente"}
-                {pqr.status === "analyzed" && "✓ Analizada"}
-                {pqr.status === "assigned" && "👤 Asignada"}
-                {pqr.status === "resolved" && "✓ Resuelta"}
+                {pqr.status === "pending" && "Pendiente"}
+                {pqr.status === "analyzed" && "Analizada"}
+                {pqr.status === "assigned" && "Asignada"}
+                {pqr.status === "resolved" && "Resuelta"}
               </div>
             </div>
 
             {/* Classification Card */}
             {pqr.classification && (
-              <div className="bg-white rounded-lg shadow-md p-4 border-l-4 border-purple-500">
-                <h3 className="font-semibold text-gray-900 mb-2 text-sm">CLASIFICACIÓN</h3>
-                <p className="text-gray-700 font-medium">{pqr.classification}</p>
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                <h3 className="mb-2 text-sm font-semibold text-slate-900">CLASIFICACIÓN</h3>
+                <p className="font-medium text-slate-700">{pqr.classification}</p>
                 {pqr.confidence !== undefined && (
                   <div className="mt-3">
                     <div className="flex justify-between items-center mb-1">
-                      <p className="text-xs text-gray-600">Confianza</p>
-                      <span className="text-xs font-semibold text-gray-700">{pqr.confidence}%</span>
+                      <p className="text-xs text-slate-600">Confianza</p>
+                      <span className="text-xs font-semibold text-slate-700">{pqr.confidence}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="h-2 w-full rounded-full bg-slate-200">
                       <div
-                        className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300"
+                        className="h-2 rounded-full bg-gradient-to-r from-cyan-500 to-amber-500 transition-all duration-300"
                         style={{ width: `${pqr.confidence}%` }}
                       ></div>
                     </div>
@@ -248,24 +257,24 @@ export default function AdminDetailPage() {
             )}
 
             {/* Channel Card */}
-            <div className="bg-white rounded-lg shadow-md p-4 border-l-4 border-green-500">
-              <h3 className="font-semibold text-gray-900 mb-2 text-sm">CANAL</h3>
-              <span className="inline-block px-3 py-1 bg-gray-100 text-gray-700 rounded-md text-sm font-medium">
-                {pqr.channel === "web" && "📱 Formulario Web"}
-                {pqr.channel === "email" && "📧 Correo"}
-                {pqr.channel === "chat" && "💬 Chat"}
-                {pqr.channel === "phone" && "☎️ Teléfono"}
-                {pqr.channel === "social" && "👍 Redes Sociales"}
+            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+              <h3 className="mb-2 text-sm font-semibold text-slate-900">CANAL</h3>
+              <span className="inline-block rounded-md bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">
+                {pqr.channel === "web" && "Formulario Web"}
+                {pqr.channel === "email" && "Correo"}
+                {pqr.channel === "chat" && "Chat"}
+                {pqr.channel === "phone" && "Teléfono"}
+                {pqr.channel === "social" && "Redes Sociales"}
               </span>
             </div>
 
             {/* Topics Card */}
             {pqr.topics && pqr.topics.length > 0 && (
-              <div className="bg-white rounded-lg shadow-md p-4 border-l-4 border-orange-500">
-                <h3 className="font-semibold text-gray-900 mb-2 text-sm">TEMAS</h3>
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                <h3 className="mb-2 text-sm font-semibold text-slate-900">TEMAS</h3>
                 <div className="flex flex-wrap gap-2">
                   {pqr.topics.map((topic, idx) => (
-                    <span key={idx} className="px-2 py-1 bg-orange-100 text-orange-700 rounded text-xs font-medium">
+                    <span key={idx} className="rounded text-xs font-medium bg-amber-100 px-2 py-1 text-amber-700">
                       {topic}
                     </span>
                   ))}
@@ -277,7 +286,7 @@ export default function AdminDetailPage() {
             {pqr.multi_dependency && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <p className="text-sm text-red-800 font-medium flex items-center gap-2">
-                  <span>⚠️</span>
+                  <span>Atención</span>
                   <span>Múltiples dependencias</span>
                 </p>
               </div>
