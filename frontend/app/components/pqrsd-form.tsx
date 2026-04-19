@@ -55,7 +55,6 @@ const resolveMimeType = (file: File) => {
 
 const CONTACT_INTENTS: Array<{ label: string; hint: string; channel: FormChannel }> = [
   { label: "Jupiter", hint: "Radicación y seguimiento institucional", channel: "official-web" },
-  { label: "Chatear por WhatsApp", hint: "Respuesta rápida por mensajería", channel: "official-whatsapp" },
   { label: "Usar asistente IA", hint: "Orientación guiada automática", channel: "official-ai" },
   { label: "Enviar por correo", hint: "Ideal para adjuntos", channel: "official-email" },
   { label: "Llamar por teléfono", hint: "Atención directa", channel: "official-phone" },
@@ -80,7 +79,7 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
   const shouldRedirectToExternal = isOfficialChannel && channel !== 'official-web';
 
   const contentLength = content.trim().length;
-  const isValidContent = contentLength >= MIN_CONTENT_LENGTH && contentLength <= 2000;
+  const isValidContent = contentLength >= MIN_CONTENT_LENGTH && contentLength <= 5000;
 
   const handleImageSelection = (files: File[]) => {
     const valid = files.filter((file) => ALLOWED_IMAGE_TYPES.has(file.type));
@@ -177,7 +176,7 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
       // VALIDAR PRIMERO antes de enviar al servidor
       if (!isValidContent) {
         setMessageType("error");
-        setMessage(`Tu solicitud debe tener entre ${MIN_CONTENT_LENGTH} y 2000 caracteres.`);
+        setMessage(`Tu solicitud debe tener entre ${MIN_CONTENT_LENGTH} y 5000 caracteres.`);
         setLoading(false);
         return;
       }
@@ -344,15 +343,15 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
             onChange={(e) => setContent(e.target.value)}
             placeholder={shouldRedirectToExternal ? "Describe brevemente para tener un borrador antes de ir al canal oficial..." : "Cuéntanos qué necesitas..."}
             rows={6}
-            maxLength={2000}
+            maxLength={5000}
             required
             className="w-full resize-none rounded-xl border border-slate-300 bg-white/90 px-4 py-3 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30 focus:outline-none"
           />
           <div className="mt-2 flex items-center justify-between text-xs">
             <span className={isValidContent ? "text-emerald-600 font-semibold" : "text-red-600 font-semibold"}>
-              Minimo {MIN_CONTENT_LENGTH} y maximo 2000 caracteres
+              Minimo {MIN_CONTENT_LENGTH} y maximo 5000 caracteres
             </span>
-            <span className={isValidContent ? "text-slate-600" : "text-red-600"}>{contentLength}/2000</span>
+            <span className={isValidContent ? "text-slate-600" : "text-red-600"}>{contentLength}/5000</span>
           </div>
         </div>
 

@@ -42,7 +42,7 @@ export const CHANNELS = [
 ];
 
 export type InternalChannel = 'web' | 'email' | 'chat' | 'phone' | 'social';
-export type OfficialChannel = 'official-web' | 'official-whatsapp' | 'official-ai' | 'official-email' | 'official-phone';
+export type OfficialChannel = 'official-web' | 'official-ai' | 'official-email' | 'official-phone';
 export type FormChannel = InternalChannel | OfficialChannel;
 
 export const OFFICIAL_CHANNEL_CONFIG: Record<OfficialChannel, {
@@ -52,13 +52,6 @@ export const OFFICIAL_CHANNEL_CONFIG: Record<OfficialChannel, {
   ingestChannel: InternalChannel;
   actionLabel: string;
 }> = {
-  'official-whatsapp': {
-    label: 'Flor IA por WhatsApp',
-    description: 'Canal conversacional para atencion automatizada y orientacion ciudadana.',
-    redirectUrl: import.meta.env.VITE_MEDELLIN_WHATSAPP_URL || '/canales/flor-ia',
-    ingestChannel: 'social',
-    actionLabel: 'Abrir Flor IA en WhatsApp'
-  },
   'official-web': {
     label: 'Jupiter',
     description: 'Radicación y seguimiento de solicitudes dentro del sistema institucional.',
@@ -67,7 +60,7 @@ export const OFFICIAL_CHANNEL_CONFIG: Record<OfficialChannel, {
     actionLabel: 'Abrir Jupiter'
   },
   'official-ai': {
-    label: 'Flor IA',
+    label: 'Flor IA Whatsapp',
     description: 'Asistencia guiada para orientacion ciudadana.',
     redirectUrl: import.meta.env.VITE_MEDELLIN_AI_URL || '/canales/flor-ia',
     ingestChannel: 'chat',
@@ -91,7 +84,6 @@ export const OFFICIAL_CHANNEL_CONFIG: Record<OfficialChannel, {
 
 export const FORM_CHANNELS: Array<{ value: FormChannel; label: string; type: 'internal' | 'official' }> = [
   { value: 'official-web', label: 'Jupiter', type: 'official' },
-  { value: 'official-whatsapp', label: 'Flor IA por WhatsApp', type: 'official' },
   { value: 'official-ai', label: 'Flor IA', type: 'official' },
   { value: 'official-email', label: 'Correo oficial Alcaldía', type: 'official' },
   { value: 'official-phone', label: 'Línea Telefónica Oficial', type: 'official' }

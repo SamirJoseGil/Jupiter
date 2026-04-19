@@ -128,7 +128,7 @@ export default function AccessibilityControls() {
           </p>
 
           <div className="mt-4 space-y-2 text-sm">
-            <label className="flex cursor-pointer items-center justify-between rounded-lg border border-slate-200 px-3 py-2">
+            {/* <label className="flex cursor-pointer items-center justify-between rounded-lg border border-slate-200 px-3 py-2">
               <span>Alto contraste</span>
               <input
                 type="checkbox"
@@ -136,7 +136,7 @@ export default function AccessibilityControls() {
                 onChange={() => togglePreference("highContrast")}
                 aria-label="Activar alto contraste"
               />
-            </label>
+            </label> */}
 
             <label className="flex cursor-pointer items-center justify-between rounded-lg border border-slate-200 px-3 py-2">
               <span>Modo oscuro</span>
