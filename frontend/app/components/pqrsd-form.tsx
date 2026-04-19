@@ -34,7 +34,7 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
   const officialConfig = isOfficialChannel ? OFFICIAL_CHANNEL_CONFIG[channel as keyof typeof OFFICIAL_CHANNEL_CONFIG] : null;
 
   const contentLength = content.trim().length;
-  const isValidContent = contentLength >= 20 && contentLength <= 2000;
+  const isValidContent = contentLength <= 2000;
 
   // Real-time suggestions with debounce
   useEffect(() => {
@@ -43,7 +43,7 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
       clearTimeout(debounceTimer.current);
     }
 
-    // Only suggest if content is long enough
+      // Only suggest if content is long enough
     if (contentLength < 50) {
       setSuggestion(null);
       return;
@@ -96,7 +96,7 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
     try {
       // VALIDAR PRIMERO antes de enviar al servidor
       if (!isValidContent) {
-        setMessage("La solicitud debe tener entre 20 y 2000 caracteres");
+        setMessage("La solicitud no puede superar 2000 caracteres");
         setLoading(false);
         return;
       }
@@ -210,7 +210,7 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
           />
           <div className="mt-2 flex items-center justify-between text-xs">
             <span className={isValidContent ? "text-gray-500" : "text-red-600"}>
-              Minimo 20 caracteres, maximo 2000
+              Máximo 2000 caracteres
             </span>
             <span className="text-gray-500">{contentLength}/2000</span>
           </div>
