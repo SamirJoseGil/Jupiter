@@ -103,6 +103,26 @@ const initDatabase = async () => {
     `);
     console.log('Corrections table ready');
 
+    // Create email ingestions table
+    console.log('Creating email_ingestions table...');
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS email_ingestions (
+        id SERIAL PRIMARY KEY,
+        external_message_id VARCHAR(255) UNIQUE,
+        sender_email VARCHAR(255) NOT NULL,
+        subject VARCHAR(500) NOT NULL,
+        content TEXT NOT NULL,
+        raw_payload JSONB,
+        status VARCHAR(50) DEFAULT 'received',
+        pqr_id INTEGER REFERENCES pqrs(id) ON DELETE SET NULL,
+        last_error TEXT,
+        processed_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+    console.log('email_ingestions table ready');
+
     // Create indices for performance
     console.log('Creating indices...');
     try {
@@ -113,6 +133,8 @@ const initDatabase = async () => {
         CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
         CREATE INDEX IF NOT EXISTS idx_responses_pqr ON responses(pqr_id);
         CREATE INDEX IF NOT EXISTS idx_corrections_pqr ON corrections(pqr_id);
+        CREATE INDEX IF NOT EXISTS idx_email_ingestions_status ON email_ingestions(status);
+        CREATE INDEX IF NOT EXISTS idx_email_ingestions_created_at ON email_ingestions(created_at DESC);
       `);
     } catch (indexError) {
       console.log('Note: Some indices may already exist');

@@ -2,9 +2,79 @@ const express = require('express');
 const PQR = require('../models/pqr');
 const Response = require('../models/response');
 const Correction = require('../models/correction');
+const EmailIngestion = require('../models/emailIngestion');
 const { analyze } = require('../services/ai');
 const { verifyToken, verifyAdmin } = require('../middleware/auth');
 const router = express.Router();
+
+const mapN8nEmailPayload = (payload = {}) => {
+  const from = payload.from || payload.sender || payload.email || payload.senderEmail;
+  const subject = payload.subject || payload.title || '(Sin asunto)';
+  const content = payload.content || payload.body || payload.text || '';
+  const externalMessageId = payload.messageId || payload.gmailMessageId || payload.id || null;
+
+  return {
+    from,
+    subject,
+    content,
+    externalMessageId,
+  };
+};
+
+const createAnalyzedEmailPqr = async ({ from, subject, content, externalMessageId, rawPayload }) => {
+  if (!from || !subject || !content) {
+    throw new Error('Missing required fields: from, subject, content');
+  }
+
+  if (content.length < 20 || content.length > 5000) {
+    throw new Error('Content must be between 20 and 5000 characters');
+  }
+
+  const duplicated = externalMessageId
+    ? await EmailIngestion.getByExternalMessageId(externalMessageId)
+    : null;
+
+  if (duplicated) {
+    return {
+      duplicated: true,
+      ingestion: duplicated,
+      pqrId: duplicated.pqr_id || null,
+    };
+  }
+
+  const ingestion = await EmailIngestion.create({
+    externalMessageId,
+    senderEmail: from,
+    subject,
+    content,
+    rawPayload,
+  });
+
+  try {
+    const pqr = await PQR.create({
+      content: `[Email] ${subject}\n\n${content}`,
+      channel: 'email',
+    });
+
+    const analysis = await analyze(content);
+    const updatedPqr = await PQR.updateAnalysis(pqr.id, {
+      ...analysis,
+      assignedDepartment: analysis.classification,
+    });
+
+    await EmailIngestion.markProcessed(ingestion.id, updatedPqr.id);
+
+    return {
+      duplicated: false,
+      ingestion,
+      pqrId: updatedPqr.id,
+      pqr: updatedPqr,
+    };
+  } catch (error) {
+    await EmailIngestion.markFailed(ingestion.id, error.message);
+    throw error;
+  }
+};
 
 /**
  * @openapi
@@ -577,50 +647,30 @@ router.post('/analyze-preview', async (req, res) => {
  */
 router.post('/import-email', verifyToken, verifyAdmin, async (req, res) => {
   try {
-    const { from, subject, content } = req.body;
+    const { from, subject, content, messageId } = req.body;
 
-    // Validations
-    if (!from || !subject || !content) {
-      return res.status(400).json({
-        error: {
-          status: 400,
-          message: 'Falta información: from, subject, content requeridos'
-        }
-      });
-    }
-
-    if (content.length < 20 || content.length > 2000) {
-      return res.status(400).json({
-        error: {
-          status: 400,
-          message: 'El contenido debe tener entre 20 y 2000 caracteres'
-        }
-      });
-    }
-
-    // Analyze with AI
-    const analysis = await analyze(content);
-
-    // Create PQRSD
-    const result = await PQR.create({
-      email: from,
-      channel: 'email',
-      title: subject,
-      content: content,
-      classification: analysis.classification,
-      confidence: analysis.confidence,
-      topics: analysis.topics,
-      multi_dependency: analysis.multi_dependency,
-      summary: analysis.summary,
-      status: 'analyzed' // Mark as analyzed since we already did it
+    const result = await createAnalyzedEmailPqr({
+      from,
+      subject,
+      content,
+      externalMessageId: messageId || null,
+      rawPayload: req.body,
     });
+
+    if (result.duplicated) {
+      return res.status(200).json({
+        message: 'Email ya procesado previamente',
+        duplicated: true,
+        id: result.pqrId,
+      });
+    }
 
     res.status(201).json({
       message: 'Email importado exitosamente',
-      id: result.id,
-      classification: result.classification,
-      confidence: result.confidence,
-      topics: result.topics,
+      id: result.pqr.id,
+      classification: result.pqr.classification,
+      confidence: result.pqr.confidence,
+      topics: result.pqr.topics,
       from: from,
       subject: subject
     });
@@ -630,6 +680,97 @@ router.post('/import-email', verifyToken, verifyAdmin, async (req, res) => {
       error: {
         status: 500,
         message: 'Error importando email: ' + error.message
+      }
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /api/webhooks/n8n/email:
+ *   post:
+ *     tags: [Email Import]
+ *     summary: Webhook de n8n para ingesta automatica de correos
+ *     description: Recibe payload de n8n, analiza con IA y guarda PQRSD en BD.
+ *     requestBody:
+ *       required: true
+ *     responses:
+ *       200:
+ *         description: Procesado correctamente
+ *       401:
+ *         description: Webhook secret invalido
+ */
+router.post('/webhooks/n8n/email', async (req, res) => {
+  try {
+    const configuredSecret = process.env.N8N_WEBHOOK_SECRET;
+
+    if (!configuredSecret) {
+      return res.status(503).json({
+        error: {
+          status: 503,
+          message: 'N8N_WEBHOOK_SECRET is not configured'
+        }
+      });
+    }
+
+    const incomingSecret = req.headers['x-webhook-secret'] || req.query.secret;
+    if (!incomingSecret || incomingSecret !== configuredSecret) {
+      return res.status(401).json({
+        error: {
+          status: 401,
+          message: 'Invalid webhook secret'
+        }
+      });
+    }
+
+    const payloadItems = Array.isArray(req.body?.emails)
+      ? req.body.emails
+      : Array.isArray(req.body)
+      ? req.body
+      : [req.body];
+
+    const processed = [];
+    const failed = [];
+
+    for (const item of payloadItems) {
+      const { from, subject, content, externalMessageId } = mapN8nEmailPayload(item);
+
+      try {
+        const result = await createAnalyzedEmailPqr({
+          from,
+          subject,
+          content,
+          externalMessageId,
+          rawPayload: item,
+        });
+
+        processed.push({
+          externalMessageId: externalMessageId || null,
+          duplicated: result.duplicated,
+          pqrId: result.pqrId || result.pqr?.id || null,
+        });
+      } catch (error) {
+        failed.push({
+          externalMessageId: externalMessageId || null,
+          error: error.message,
+        });
+      }
+    }
+
+    res.status(200).json({
+      message: 'n8n email webhook processed',
+      total: payloadItems.length,
+      processed: processed.length,
+      failed: failed.length,
+      results: processed,
+      errors: failed,
+    });
+  } catch (error) {
+    console.error('n8n webhook error:', error);
+    res.status(500).json({
+      error: {
+        status: 500,
+        message: 'Webhook processing failed: ' + error.message
       }
     });
   }

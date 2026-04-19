@@ -258,6 +258,57 @@ Response 200:
 }
 ```
 
+## Email Automation (n8n)
+
+### POST /api/webhooks/n8n/email
+Descripcion: Ingesta automatica de correos desde n8n. Crea PQRSD, ejecuta clasificacion IA y guarda trazabilidad en email_ingestions.
+Auth: Webhook secret por header
+
+Headers requeridos:
+- x-webhook-secret: debe coincidir con N8N_WEBHOOK_SECRET
+
+Body soportado:
+- Objeto unico con campos from, subject, content, messageId (o variantes sender/body/text/id)
+- O arreglo de objetos
+- O { "emails": [ ... ] }
+
+Request body ejemplo:
+```json
+{
+  "emails": [
+    {
+      "from": "ciudadano@correo.com",
+      "subject": "Hueco en la via principal",
+      "content": "Hace semanas hay un hueco grande frente al colegio...",
+      "messageId": "gmail-abc-123"
+    }
+  ]
+}
+```
+
+Response 200:
+```json
+{
+  "message": "n8n email webhook processed",
+  "total": 1,
+  "processed": 1,
+  "failed": 0,
+  "results": [
+    {
+      "externalMessageId": "gmail-abc-123",
+      "duplicated": false,
+      "pqrId": 35
+    }
+  ],
+  "errors": []
+}
+```
+
+Errores:
+- 401: webhook secret invalido
+- 503: N8N_WEBHOOK_SECRET no configurado
+- 500: fallo interno de procesamiento
+
 Errores:
 - 400: status invalido
 - 401: no autenticado
