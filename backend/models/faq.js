@@ -81,6 +81,30 @@ class FAQ {
 
     return result.rows[0] || null;
   }
+
+  static async getMetrics() {
+    const summaryResult = await pool.query(`
+      SELECT
+        COUNT(*)::int AS total_faqs,
+        COALESCE(SUM(usage_count), 0)::int AS total_usage,
+        COALESCE(AVG(usage_count), 0)::numeric(10,2) AS avg_usage
+      FROM faq_entries;
+    `);
+
+    const topFaqs = await pool.query(`
+      SELECT id, question, usage_count
+      FROM faq_entries
+      ORDER BY usage_count DESC, updated_at DESC
+      LIMIT 5;
+    `);
+
+    return {
+      total_faqs: summaryResult.rows[0].total_faqs || 0,
+      total_usage: summaryResult.rows[0].total_usage || 0,
+      avg_usage: Number(summaryResult.rows[0].avg_usage || 0),
+      top_faqs: topFaqs.rows,
+    };
+  }
 }
 
 module.exports = FAQ;

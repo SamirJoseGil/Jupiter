@@ -4,6 +4,7 @@ const PqrRelation = require('../models/pqrRelation');
 const FAQ = require('../models/faq');
 const Response = require('../models/response');
 const ResponseTemplate = require('../models/responseTemplate');
+const User = require('../models/user');
 const Correction = require('../models/correction');
 const EmailIngestion = require('../models/emailIngestion');
 const { analyze } = require('../services/ai');
@@ -1068,9 +1069,25 @@ router.get('/responses/:pqrId', verifyToken, verifyAdmin, async (req, res) => {
 router.get('/stats', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const tableName = await PQR.getTableName();
-    const stats = await PQR.getStats();
-    const responseMetrics = await Response.getMetrics(tableName);
-    res.json({ ...stats, response_metrics: responseMetrics });
+    const [stats, responseMetrics, pqrBreakdown, faqMetrics, userMetrics, templateMetrics, responseBreakdown] = await Promise.all([
+      PQR.getStats(),
+      Response.getMetrics(tableName),
+      PQR.getBreakdownMetrics(),
+      FAQ.getMetrics(),
+      User.getMetrics(),
+      ResponseTemplate.getMetrics(),
+      Response.getBreakdown(),
+    ]);
+
+    res.json({
+      ...stats,
+      ...pqrBreakdown,
+      response_metrics: responseMetrics,
+      response_breakdown: responseBreakdown,
+      faq_metrics: faqMetrics,
+      user_metrics: userMetrics,
+      template_metrics: templateMetrics,
+    });
   } catch (error) {
     console.error('Stats error:', error);
     res.status(500).json({

@@ -73,6 +73,29 @@ class Response {
       pending_without_response: coverageResult.rows[0].pending_without_response || 0,
     };
   }
+
+  static async getBreakdown() {
+    const [dailyResult, statusResult] = await Promise.all([
+      pool.query(`
+        SELECT TO_CHAR(date_trunc('day', COALESCE(sent_at, created_at)), 'YYYY-MM-DD') AS label, COUNT(*)::int AS count
+        FROM responses
+        WHERE COALESCE(sent_at, created_at) >= NOW() - INTERVAL '7 days'
+        GROUP BY 1
+        ORDER BY 1 ASC;
+      `),
+      pool.query(`
+        SELECT status, COUNT(*)::int AS count
+        FROM responses
+        GROUP BY status
+        ORDER BY count DESC;
+      `),
+    ]);
+
+    return {
+      activity_last_7_days: dailyResult.rows,
+      status_distribution: statusResult.rows,
+    };
+  }
 }
 
 module.exports = Response;

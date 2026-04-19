@@ -26,6 +26,15 @@ interface DashboardStats {
   analyzed?: number;
   assigned?: number;
   resolved?: number;
+  avg_classification_confidence?: number;
+  total_corrected?: number;
+  time_saved_minutes?: number;
+  channel_distribution?: Array<{ channel: string; count: number }>;
+  department_distribution?: Array<{ label: string; count: number }>;
+  activity_last_7_days?: Array<{ label: string; count: number }>;
+  evidence_rate?: number;
+  evidence_total?: number;
+  evidence_missing?: number;
   response_metrics?: {
     total_responses: number;
     total_drafts: number;
@@ -34,7 +43,121 @@ interface DashboardStats {
     avg_response_hours: number;
     pending_without_response: number;
   };
+  response_breakdown?: {
+    activity_last_7_days?: Array<{ label: string; count: number }>;
+    status_distribution?: Array<{ status: string; count: number }>;
+  };
+  faq_metrics?: {
+    total_faqs: number;
+    total_usage: number;
+    avg_usage: number;
+    top_faqs: Array<{ id: number; question: string; usage_count: number }>;
+  };
+  user_metrics?: {
+    total_users: number;
+    active_users: number;
+    inactive_users: number;
+    superadmins: number;
+    admins: number;
+    role_distribution: Array<{ label: string; count: number }>;
+    department_distribution: Array<{ label: string; count: number }>;
+    recent_users: Array<{ id: number; email: string; role: string; department?: string; is_active: boolean }>;
+  };
+  template_metrics?: {
+    total_templates: number;
+    active_templates: number;
+    inactive_templates: number;
+    recent_templates: Array<{ id: number; name: string; is_active: boolean }>;
+  };
 }
+
+const formatMetricLabel = (value: string) =>
+  value
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+
+const getMaxValue = (items: Array<{ count: number }>) => Math.max(...items.map((item) => item.count), 1);
+
+const MetricRing = ({
+  label,
+  value,
+  description,
+  tone = '#3366CC',
+}: {
+  label: string;
+  value: number;
+  description: string;
+  tone?: string;
+}) => (
+  <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div
+      className="mx-auto flex h-28 w-28 items-center justify-center rounded-full"
+      style={{ background: `conic-gradient(${tone} ${Math.min(Math.max(value, 0), 100)}%, #e2e8f0 0)` }}
+    >
+      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white text-center">
+        <div>
+          <p className="text-xl font-black text-slate-900">{Math.round(value)}%</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">{label}</p>
+        </div>
+      </div>
+    </div>
+    <p className="mt-3 text-center text-sm text-slate-600">{description}</p>
+  </div>
+);
+
+const MetricBars = ({
+  title,
+  subtitle,
+  items,
+  accentClass = 'bg-[#3366CC]',
+  valueFormatter = (count: number) => String(count),
+}: {
+  title: string;
+  subtitle: string;
+  items?: Array<{ label?: string; channel?: string; status?: string; count: number }>;
+  accentClass?: string;
+  valueFormatter?: (count: number) => string;
+}) => {
+  const normalized = (items || []).map((item) => ({
+    label: item.label || item.channel || item.status || 'Otro',
+    count: item.count,
+  }));
+  const maxValue = getMaxValue(normalized);
+
+  return (
+    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="mb-4">
+        <h3 className="text-base font-bold text-slate-900">{title}</h3>
+        <p className="text-sm text-slate-600">{subtitle}</p>
+      </div>
+
+      {normalized.length === 0 ? (
+        <p className="text-sm text-slate-500">No hay datos para mostrar.</p>
+      ) : (
+        <div className="space-y-3">
+          {normalized.map((item) => {
+            const percentage = Math.max((item.count / maxValue) * 100, 6);
+
+            return (
+              <div key={item.label}>
+                <div className="mb-1 flex items-center justify-between gap-3 text-sm">
+                  <span className="font-medium text-slate-700">{formatMetricLabel(item.label)}</span>
+                  <span className="font-semibold text-slate-900">{valueFormatter(item.count)}</span>
+                </div>
+                <div className="h-3 rounded-full bg-slate-100">
+                  <div
+                    className={`h-3 rounded-full ${accentClass}`}
+                    style={{ width: `${percentage}%` }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+};
 
 interface SurveyData {
   sample_size: number;
@@ -200,7 +323,7 @@ export default function AdminDashboardPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-bold text-slate-900">Metricas del Dashboard</h2>
-            <p className="text-sm text-slate-600">Indicadores de respuestas y productividad administrativa.</p>
+            <p className="text-sm text-slate-600">Indicadores operativos y analiticos para administradores.</p>
           </div>
           <button
             onClick={generateSurvey}
@@ -211,19 +334,44 @@ export default function AdminDashboardPage() {
           </button>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
-            <p className="text-xs uppercase tracking-wide text-slate-500">Respuestas enviadas</p>
-            <p className="mt-1 text-2xl font-black text-slate-900">{stats?.response_metrics?.total_sent ?? 0}</p>
+            <p className="text-xs uppercase tracking-wide text-slate-500">Solicitudes totales</p>
+            <p className="mt-1 text-2xl font-black text-slate-900">{stats?.total_PQRSDf ?? 0}</p>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
-            <p className="text-xs uppercase tracking-wide text-slate-500">Borradores</p>
-            <p className="mt-1 text-2xl font-black text-slate-900">{stats?.response_metrics?.total_drafts ?? 0}</p>
+            <p className="text-xs uppercase tracking-wide text-slate-500">Confianza promedio</p>
+            <p className="mt-1 text-2xl font-black text-slate-900">{stats?.avg_classification_confidence ?? 0}%</p>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
-            <p className="text-xs uppercase tracking-wide text-slate-500">Tiempo promedio respuesta</p>
-            <p className="mt-1 text-2xl font-black text-slate-900">{stats?.response_metrics?.avg_response_hours ?? 0}h</p>
+            <p className="text-xs uppercase tracking-wide text-slate-500">Tiempo ahorrado</p>
+            <p className="mt-1 text-2xl font-black text-slate-900">{stats?.time_saved_minutes ?? 0}m</p>
           </div>
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+            <p className="text-xs uppercase tracking-wide text-slate-500">Evidencias adjuntas</p>
+            <p className="mt-1 text-2xl font-black text-slate-900">{stats?.evidence_total ?? 0}</p>
+          </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-3">
+          <MetricRing
+            label="Cobertura"
+            value={stats?.response_metrics?.total_responses ? Math.min(((stats.response_metrics.total_sent / stats.response_metrics.total_responses) * 100), 100) : 0}
+            description="Porcentaje de respuestas ya enviadas respecto al total de borradores y envíos."
+            tone="#0f766e"
+          />
+          <MetricRing
+            label="Resolución"
+            value={stats?.total_PQRSDf ? Math.min(((stats.resolved || 0) / stats.total_PQRSDf) * 100, 100) : 0}
+            description="Proporción de solicitudes resueltas dentro del total acumulado."
+            tone="#3366CC"
+          />
+          <MetricRing
+            label="Evidencias"
+            value={stats?.evidence_rate ?? 0}
+            description="Solicitudes que incluyen archivos de soporte válidos."
+            tone="#b45309"
+          />
         </div>
 
         {survey && (
@@ -251,30 +399,149 @@ export default function AdminDashboardPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+      <div className="grid gap-4 xl:grid-cols-2">
+        <MetricBars
+          title="Solicitudes por canal"
+          subtitle="Distribucion por canal de ingreso de las solicitudes."
+          items={stats?.channel_distribution?.map((item) => ({ label: item.channel, count: item.count }))}
+          accentClass="bg-[#3366CC]"
+        />
+        <MetricBars
+          title="Solicitudes por dependencia"
+          subtitle="Dependencias con mayor carga de solicitudes."
+          items={stats?.department_distribution}
+          accentClass="bg-amber-500"
+        />
+        <MetricBars
+          title="Actividad de solicitudes (7 días)"
+          subtitle="Volumen diario de solicitudes recientes."
+          items={stats?.activity_last_7_days}
+          accentClass="bg-emerald-500"
+        />
+        <MetricBars
+          title="Actividad de respuestas (7 días)"
+          subtitle="Respuestas redactadas o enviadas por día."
+          items={stats?.response_breakdown?.activity_last_7_days}
+          accentClass="bg-violet-500"
+        />
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <h3 className="text-base font-bold text-slate-900">FAQ mas consultadas</h3>
+              <p className="text-sm text-slate-600">Preguntas frecuentes con mayor uso acumulado.</p>
+            </div>
+            <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+              {stats?.faq_metrics?.total_faqs ?? 0} FAQ
+            </div>
+          </div>
+
+          {stats?.faq_metrics?.top_faqs?.length ? (
+            <div className="overflow-hidden rounded-2xl border border-slate-200">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                  <tr>
+                    <th className="px-4 py-3">Pregunta</th>
+                    <th className="px-4 py-3">Usos</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 bg-white">
+                  {stats.faq_metrics.top_faqs.map((faq) => (
+                    <tr key={faq.id}>
+                      <td className="px-4 py-3 text-slate-700">{faq.question}</td>
+                      <td className="px-4 py-3 font-semibold text-slate-900">{faq.usage_count}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-sm text-slate-500">Aún no hay FAQ para mostrar.</p>
+          )}
+        </section>
+
+        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <h3 className="text-base font-bold text-slate-900">Usuarios y plantillas</h3>
+              <p className="text-sm text-slate-600">Resumen para control operativo y de permisos.</p>
+            </div>
+            <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+              {stats?.user_metrics?.total_users ?? 0} usuarios
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+              <p className="text-xs uppercase tracking-wide text-slate-500">Superadmins</p>
+              <p className="mt-1 text-2xl font-black text-slate-900">{stats?.user_metrics?.superadmins ?? 0}</p>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+              <p className="text-xs uppercase tracking-wide text-slate-500">Plantillas activas</p>
+              <p className="mt-1 text-2xl font-black text-slate-900">{stats?.template_metrics?.active_templates ?? 0}</p>
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <MetricBars
+              title="Roles de usuario"
+              subtitle="Distribucion por nivel de acceso."
+              items={stats?.user_metrics?.role_distribution}
+              accentClass="bg-slate-900"
+            />
+            <MetricBars
+              title="Dependencias con usuarios"
+              subtitle="Usuarios por dependencia registrada."
+              items={stats?.user_metrics?.department_distribution}
+              accentClass="bg-amber-500"
+            />
+          </div>
+
+          <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                <tr>
+                  <th className="px-4 py-3">Usuario reciente</th>
+                  <th className="px-4 py-3">Rol</th>
+                  <th className="px-4 py-3">Estado</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 bg-white">
+                {(stats?.user_metrics?.recent_users || []).map((user) => (
+                  <tr key={user.id}>
+                    <td className="px-4 py-3 text-slate-700">{user.email}</td>
+                    <td className="px-4 py-3 font-semibold text-slate-900">{formatMetricLabel(user.role)}</td>
+                    <td className="px-4 py-3">
+                      <span className={`rounded-full px-2 py-1 text-xs font-semibold ${user.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                        {user.is_active ? 'Activo' : 'Inactivo'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-4">
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-sm text-slate-600">Pendientes</p>
-          <p className="text-2xl font-bold text-slate-900">
-            {PQRSDf.filter((p) => p.status === "pending").length}
-          </p>
+          <p className="text-2xl font-bold text-slate-900">{PQRSDf.filter((p) => p.status === "pending").length}</p>
         </div>
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-sm text-slate-600">Analizadas</p>
-          <p className="text-2xl font-bold text-slate-900">
-            {PQRSDf.filter((p) => p.status === "analyzed").length}
-          </p>
+          <p className="text-2xl font-bold text-slate-900">{PQRSDf.filter((p) => p.status === "analyzed").length}</p>
         </div>
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-sm text-slate-600">Asignadas</p>
-          <p className="text-2xl font-bold text-slate-900">
-            {PQRSDf.filter((p) => p.status === "assigned").length}
-          </p>
+          <p className="text-2xl font-bold text-slate-900">{PQRSDf.filter((p) => p.status === "assigned").length}</p>
         </div>
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-sm text-slate-600">Resueltas</p>
-          <p className="text-2xl font-bold text-slate-900">
-            {PQRSDf.filter((p) => p.status === "resolved").length}
-          </p>
+          <p className="text-2xl font-bold text-slate-900">{PQRSDf.filter((p) => p.status === "resolved").length}</p>
         </div>
       </div>
     </div>

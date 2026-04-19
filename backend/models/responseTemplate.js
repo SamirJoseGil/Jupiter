@@ -52,6 +52,33 @@ class ResponseTemplate {
 
     return result.rows[0];
   }
+
+  static async getMetrics() {
+    const [summaryResult, recentResult] = await Promise.all([
+      pool.query(`
+        SELECT
+          COUNT(*)::int AS total_templates,
+          COUNT(*) FILTER (WHERE is_active = TRUE)::int AS active_templates,
+          COUNT(*) FILTER (WHERE is_active = FALSE)::int AS inactive_templates
+        FROM response_templates;
+      `),
+      pool.query(`
+        SELECT id, name, is_active, updated_at
+        FROM response_templates
+        ORDER BY updated_at DESC
+        LIMIT 5;
+      `),
+    ]);
+
+    const summary = summaryResult.rows[0];
+
+    return {
+      total_templates: summary.total_templates || 0,
+      active_templates: summary.active_templates || 0,
+      inactive_templates: summary.inactive_templates || 0,
+      recent_templates: recentResult.rows,
+    };
+  }
 }
 
 module.exports = ResponseTemplate;

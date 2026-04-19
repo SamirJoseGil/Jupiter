@@ -434,6 +434,54 @@ class PQR {
       resolved: statusMap.resolved
     };
   }
+
+  static async getBreakdownMetrics() {
+    const tableName = await this.getTableName();
+
+    const [channelResult, departmentResult, activityResult, evidenceResult] = await Promise.all([
+      pool.query(`
+        SELECT channel, COUNT(*)::int AS count
+        FROM ${tableName}
+        GROUP BY channel
+        ORDER BY count DESC, channel ASC;
+      `),
+      pool.query(`
+        SELECT COALESCE(NULLIF(TRIM(assigned_department), ''), 'Sin asignar') AS label, COUNT(*)::int AS count
+        FROM ${tableName}
+        GROUP BY 1
+        ORDER BY count DESC, label ASC
+        LIMIT 8;
+      `),
+      pool.query(`
+        SELECT TO_CHAR(date_trunc('day', created_at), 'YYYY-MM-DD') AS label, COUNT(*)::int AS count
+        FROM ${tableName}
+        WHERE created_at >= NOW() - INTERVAL '7 days'
+        GROUP BY 1
+        ORDER BY 1 ASC;
+      `),
+      pool.query(`
+        SELECT
+          COUNT(*)::int AS total,
+          COUNT(*) FILTER (
+            WHERE COALESCE(jsonb_array_length(COALESCE(evidence_images, '[]'::jsonb)), 0) > 0
+               OR COALESCE(jsonb_array_length(COALESCE(evidence_documents, '[]'::jsonb)), 0) > 0
+          )::int AS with_evidence
+        FROM ${tableName};
+      `),
+    ]);
+
+    const total = evidenceResult.rows[0].total || 0;
+    const withEvidence = evidenceResult.rows[0].with_evidence || 0;
+
+    return {
+      channel_distribution: channelResult.rows,
+      department_distribution: departmentResult.rows,
+      activity_last_7_days: activityResult.rows,
+      evidence_rate: total === 0 ? 0 : Number(((withEvidence / total) * 100).toFixed(1)),
+      evidence_total: withEvidence,
+      evidence_missing: Math.max(total - withEvidence, 0),
+    };
+  }
 }
 
 module.exports = PQR;

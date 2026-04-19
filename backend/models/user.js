@@ -145,6 +145,52 @@ class User {
     );
     return result.rows[0] || null;
   }
+
+  static async getMetrics() {
+    const [summaryResult, roleResult, departmentResult, recentResult] = await Promise.all([
+      pool.query(`
+        SELECT
+          COUNT(*)::int AS total_users,
+          COUNT(*) FILTER (WHERE is_active = true)::int AS active_users,
+          COUNT(*) FILTER (WHERE is_active = false)::int AS inactive_users,
+          COUNT(*) FILTER (WHERE role = 'superadmin')::int AS superadmins,
+          COUNT(*) FILTER (WHERE role = 'admin')::int AS admins
+        FROM users;
+      `),
+      pool.query(`
+        SELECT role AS label, COUNT(*)::int AS count
+        FROM users
+        GROUP BY role
+        ORDER BY count DESC;
+      `),
+      pool.query(`
+        SELECT COALESCE(NULLIF(TRIM(department), ''), 'Sin dependencia') AS label, COUNT(*)::int AS count
+        FROM users
+        GROUP BY 1
+        ORDER BY count DESC, label ASC
+        LIMIT 8;
+      `),
+      pool.query(`
+        SELECT id, email, role, department, is_active, created_at
+        FROM users
+        ORDER BY created_at DESC
+        LIMIT 5;
+      `),
+    ]);
+
+    const summary = summaryResult.rows[0];
+
+    return {
+      total_users: summary.total_users || 0,
+      active_users: summary.active_users || 0,
+      inactive_users: summary.inactive_users || 0,
+      superadmins: summary.superadmins || 0,
+      admins: summary.admins || 0,
+      role_distribution: roleResult.rows,
+      department_distribution: departmentResult.rows,
+      recent_users: recentResult.rows,
+    };
+  }
 }
 
 module.exports = User;
