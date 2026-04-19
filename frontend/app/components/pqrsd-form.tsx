@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { API_BASE_URL, CHANNELS } from "~/config";
 
 type Channel = "web" | "email" | "chat" | "phone" | "social";
@@ -110,7 +111,12 @@ export default function PQRSDForm({ onSuccess }: PQRSDFormProps) {
   };
 
   return (
-    <div className="mx-auto max-w-3xl rounded-3xl border border-white/30 bg-white/70 p-8 shadow-2xl backdrop-blur-xl">
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.45 }}
+      className="mx-auto max-w-3xl rounded-3xl border border-white/30 bg-white/70 p-8 shadow-2xl backdrop-blur-xl"
+    >
       <h2 className="mb-2 text-3xl font-black text-slate-900">Envia tu Solicitud</h2>
       <p className="mb-6 text-sm text-slate-600">Canal ciudadano para peticiones, quejas, reclamos y sugerencias.</p>
 
@@ -156,8 +162,14 @@ export default function PQRSDForm({ onSuccess }: PQRSDFormProps) {
         </div>
 
         {/* Real-time AI Suggestion */}
-        {suggestion && contentLength >= 50 && !message && (
-            <div className="rounded-2xl border border-cyan-300/40 bg-gradient-to-r from-cyan-50/80 to-amber-50/80 p-4">
+        <AnimatePresence>
+          {suggestion && contentLength >= 50 && !message && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              className="rounded-2xl border border-cyan-300/40 bg-gradient-to-r from-cyan-50/80 to-amber-50/80 p-4"
+            >
             <div className="flex items-start gap-3">
               <span className="text-2xl">🤖</span>
               <div className="flex-1">
@@ -197,8 +209,9 @@ export default function PQRSDForm({ onSuccess }: PQRSDFormProps) {
                 <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-blue-600"></div>
               )}
             </div>
-            </div>
+            </motion.div>
           )}
+        </AnimatePresence>
 
         {/* Loading suggestion message */}
         {suggestingLoading && contentLength >= 50 && (
@@ -229,6 +242,6 @@ export default function PQRSDForm({ onSuccess }: PQRSDFormProps) {
       <p className="mt-4 text-center text-xs text-slate-500">
         Tu solicitud será revisada por nuestro equipo dentro de 15 días hábiles.
       </p>
-    </div>
+    </motion.div>
   );
 }
