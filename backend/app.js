@@ -7,16 +7,36 @@ const authRoutes = require('./routes/auth');
 const swaggerSpec = require('./config/swagger');
 
 const app = express();
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+const configuredOrigins = (process.env.FRONTEND_URLS || process.env.FRONTEND_URL || 'http://localhost:5173')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true;
+
+  if (configuredOrigins.includes(origin)) {
+    return true;
+  }
+
+  // Optional wildcard support for your domains in production.
+  return /^https:\/\/([a-z0-9-]+\.)?sglabs\.site$/i.test(origin);
+};
 
 // Security Middleware
 app.use(helmet());
 app.use(cors({
-  origin: [FRONTEND_URL],
+  origin(origin, callback) {
+    if (isAllowedOrigin(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error(`Not allowed by CORS: ${origin}`));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+app.options('*', cors());
 
 // Body Parser Middleware
 app.use(express.json({ limit: '10kb' }));
