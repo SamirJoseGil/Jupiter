@@ -98,6 +98,20 @@ const options = {
             }
           }
         },
+        Response: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer', example: 8 },
+            radicado: { type: 'integer', example: 8 },
+            pqr_id: { type: 'integer', example: 12 },
+            created_by_user_id: { type: 'integer', nullable: true, example: 1 },
+            recipient_email: { type: 'string', nullable: true, format: 'email', example: 'ciudadano@correo.com' },
+            response_text: { type: 'string', example: 'Cordial saludo...' },
+            status: { type: 'string', enum: ['draft', 'sent'], example: 'draft' },
+            sent_at: { type: 'string', format: 'date-time', nullable: true },
+            created_at: { type: 'string', format: 'date-time' }
+          }
+        },
         StatusUpdateRequest: {
           type: 'object',
           required: ['status'],

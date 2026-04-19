@@ -34,6 +34,8 @@ const buildPreResponse = (context?: ResponseDraftProps['pqrContext']) => {
 
 export default function ResponseDraft({ pqrId, onStatusUpdated, pqrContext }: ResponseDraftProps) {
   const [text, setText] = useState("");
+  const [recipientEmail, setRecipientEmail] = useState("");
+  const [responseRadicado, setResponseRadicado] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [message, setMessage] = useState("");
@@ -50,11 +52,20 @@ export default function ResponseDraft({ pqrId, onStatusUpdated, pqrContext }: Re
         if (data.response?.response_text) {
           setText(data.response.response_text);
         }
+        if (data.response?.recipient_email) {
+          setRecipientEmail(data.response.recipient_email);
+        }
+        if (data.response?.radicado || data.response?.id) {
+          setResponseRadicado(data.response.radicado || data.response.id);
+        }
       } catch (error) {
         console.error("Error loading draft:", error);
       }
     };
 
+    setText('');
+    setRecipientEmail('');
+    setResponseRadicado(null);
     loadDraft();
   }, [pqrId]);
 
@@ -67,6 +78,7 @@ export default function ResponseDraft({ pqrId, onStatusUpdated, pqrContext }: Re
         headers: getHeaders(),
         body: JSON.stringify({
           response_text: text,
+          recipient_email: recipientEmail,
           send
         })
       });
@@ -78,6 +90,9 @@ export default function ResponseDraft({ pqrId, onStatusUpdated, pqrContext }: Re
       }
 
       setMessage(send ? "Respuesta enviada y solicitud resuelta" : "Borrador guardado");
+      if (data.response?.radicado || data.response?.id) {
+        setResponseRadicado(data.response.radicado || data.response.id);
+      }
       if (send) {
         onStatusUpdated?.("resolved");
       }
@@ -87,6 +102,10 @@ export default function ResponseDraft({ pqrId, onStatusUpdated, pqrContext }: Re
       setLoading(false);
     }
   };
+
+  const isValidEmail = recipientEmail.trim().length === 0
+    ? false
+    : /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail.trim());
 
   const generateInstitutionalDraft = async () => {
     setGenerating(true);
@@ -114,6 +133,11 @@ export default function ResponseDraft({ pqrId, onStatusUpdated, pqrContext }: Re
   return (
     <div className="bg-white rounded-lg shadow-md p-6 space-y-4">
       <h3 className="font-semibold text-gray-900">Pre-respuesta</h3>
+      {responseRadicado ? (
+        <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+          Radicado de respuesta: <span className="font-semibold text-slate-900">#{responseRadicado}</span>
+        </div>
+      ) : null}
       <div className="flex items-center justify-between gap-2">
         <p className="text-sm text-gray-600">Puedes redactar manualmente o generar una base automatica.</p>
         <button
@@ -139,6 +163,22 @@ export default function ResponseDraft({ pqrId, onStatusUpdated, pqrContext }: Re
         className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
         placeholder="Escribe una respuesta para el ciudadano..."
       />
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700" htmlFor={`recipient-email-${pqrId}`}>
+          Correo para enviar la respuesta
+        </label>
+        <input
+          id={`recipient-email-${pqrId}`}
+          type="email"
+          value={recipientEmail}
+          onChange={(e) => setRecipientEmail(e.target.value)}
+          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+          placeholder="ciudadano@correo.com"
+        />
+        <p className="text-xs text-gray-500">
+          Este correo se guardará con la respuesta y se usará al momento de enviarla.
+        </p>
+      </div>
       {message && <p className="text-sm text-gray-700">{message}</p>}
       <div className="flex gap-3">
         <button
@@ -149,7 +189,7 @@ export default function ResponseDraft({ pqrId, onStatusUpdated, pqrContext }: Re
           Guardar borrador
         </button>
         <button
-          disabled={loading || text.trim().length < 10}
+          disabled={loading || text.trim().length < 10 || !isValidEmail}
           onClick={() => saveDraft(true)}
           className="px-4 py-2 bg-green-700 text-white rounded-md disabled:bg-gray-400"
         >

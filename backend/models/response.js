@@ -1,7 +1,7 @@
 const pool = require('../config/database');
 
 class Response {
-  static async upsertDraft({ pqrId, userId, responseText, send = false }) {
+  static async upsertDraft({ pqrId, userId, responseText, recipientEmail = null, send = false }) {
     if (!Number.isInteger(parseInt(pqrId))) {
       throw new Error('Invalid PQR ID');
     }
@@ -10,19 +10,32 @@ class Response {
       throw new Error('Response text must be at least 10 characters');
     }
 
+    const normalizedRecipientEmail = recipientEmail ? String(recipientEmail).trim().toLowerCase() : null;
+    if (normalizedRecipientEmail) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(normalizedRecipientEmail)) {
+        throw new Error('Invalid recipient email format');
+      }
+    }
+
+    if (send && !normalizedRecipientEmail) {
+      throw new Error('Recipient email is required to send the response');
+    }
+
     const status = send ? 'sent' : 'draft';
     const query = `
-      INSERT INTO responses (pqr_id, created_by_user_id, response_text, status, sent_at)
-      VALUES ($1, $2, $3, $4::varchar, CASE WHEN $4::varchar = 'sent'::varchar THEN NOW() ELSE NULL END)
+      INSERT INTO responses (pqr_id, created_by_user_id, recipient_email, response_text, status, sent_at)
+      VALUES ($1, $2, $3, $4, $5::varchar, CASE WHEN $5::varchar = 'sent'::varchar THEN NOW() ELSE NULL END)
       ON CONFLICT (pqr_id)
       DO UPDATE SET
+        recipient_email = COALESCE(EXCLUDED.recipient_email, responses.recipient_email),
         response_text = EXCLUDED.response_text,
         status = EXCLUDED.status,
         sent_at = CASE WHEN EXCLUDED.status = 'sent' THEN NOW() ELSE responses.sent_at END
       RETURNING *;
     `;
 
-    const result = await pool.query(query, [pqrId, userId || null, responseText.trim(), status]);
+    const result = await pool.query(query, [pqrId, userId || null, normalizedRecipientEmail, responseText.trim(), status]);
     return result.rows[0];
   }
 

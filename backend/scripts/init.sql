@@ -51,6 +51,18 @@ CREATE TABLE IF NOT EXISTS response_templates (
   updated_at TIMESTAMP DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS responses (
+  id SERIAL PRIMARY KEY,
+  pqr_id INTEGER NOT NULL REFERENCES PQRSDf(id) ON DELETE CASCADE,
+  created_by_user_id INTEGER REFERENCES users(id),
+  recipient_email VARCHAR(255),
+  response_text TEXT,
+  status VARCHAR(50) DEFAULT 'draft',
+  sent_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW(),
+  CONSTRAINT responses_pqr_id_unique UNIQUE (pqr_id)
+);
+
 CREATE TABLE IF NOT EXISTS pqr_relations (
   source_pqr_id INTEGER NOT NULL,
   related_pqr_id INTEGER NOT NULL,

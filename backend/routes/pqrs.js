@@ -995,12 +995,13 @@ router.put('/PQRSDf/:id/assign', verifyToken, verifyAdmin, async (req, res) => {
 router.post('/responses/:pqrId', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const { pqrId } = req.params;
-    const { response_text, send } = req.body;
+    const { response_text, recipient_email, send } = req.body;
 
     const result = await Response.upsertDraft({
       pqrId,
       userId: req.user.id,
       responseText: response_text,
+      recipientEmail: recipient_email,
       send: !!send
     });
 
@@ -1008,7 +1009,10 @@ router.post('/responses/:pqrId', verifyToken, verifyAdmin, async (req, res) => {
       await PQR.updateStatus(pqrId, 'resolved');
     }
 
-    res.status(201).json({ message: send ? 'Response sent' : 'Draft saved', response: result });
+    res.status(201).json({
+      message: send ? 'Response sent' : 'Draft saved',
+      response: { ...result, radicado: result.id },
+    });
   } catch (error) {
     console.error('Save response error:', error);
     res.status(400).json({
@@ -1092,12 +1096,13 @@ router.post('/responses/:pqrId/generate', verifyToken, verifyAdmin, async (req, 
       pqrId,
       userId: req.user.id,
       responseText: `${generatedText}\n\nReferencia normativa: ${GUIDELINES}`,
+      recipientEmail: null,
       send: false,
     });
 
     res.status(201).json({
       message: 'Pre-response generated',
-      response: stored,
+      response: { ...stored, radicado: stored.id },
       generated: generatedText,
     });
   } catch (error) {
@@ -1113,7 +1118,7 @@ router.get('/responses/:pqrId', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const { pqrId } = req.params;
     const responseDraft = await Response.getByPqrId(pqrId);
-    res.json({ response: responseDraft });
+    res.json({ response: responseDraft ? { ...responseDraft, radicado: responseDraft.id } : null });
   } catch (error) {
     console.error('Get response error:', error);
     res.status(400).json({

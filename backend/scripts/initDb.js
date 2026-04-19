@@ -127,11 +127,17 @@ const initDatabase = async () => {
         id SERIAL PRIMARY KEY,
         pqr_id INTEGER NOT NULL REFERENCES PQRSDf(id) ON DELETE CASCADE,
         created_by_user_id INTEGER REFERENCES users(id),
+        recipient_email VARCHAR(255),
         response_text TEXT,
         status VARCHAR(50) DEFAULT 'draft',
         sent_at TIMESTAMP,
         created_at TIMESTAMP DEFAULT NOW()
       );
+    `);
+
+    await pool.query(`
+      ALTER TABLE responses
+      ADD COLUMN IF NOT EXISTS recipient_email VARCHAR(255);
     `);
 
     await pool.query(`
