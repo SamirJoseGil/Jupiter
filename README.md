@@ -1,423 +1,240 @@
-# 🎯 Jupiter - Sistema PQRSDfDf con IA
+# Jupiter
 
-**Plataforma centralizada para gestión inteligente de Peticiones, Quejas, Reclamos, Sugerencias y Denuncias**
+Jupiter es una plataforma para radicar, clasificar y gestionar PQRSDF con una vista publica para ciudadanos y un panel interno para administradores.
 
----
+## Que incluye
 
-## 📊 El Problema
+- Formulario ciudadano con sugerencias en tiempo real.
+- Consulta de radicados y pagina de preguntas frecuentes.
+- Panel de administracion con inbox, detalle, plantillas, FAQ, metricas y usuarios.
+- Autenticacion con JWT.
+- Analisis de solicitudes con IA o con respaldo local.
+- Soporte para evidencias en imagen y documentos.
 
-- **Mala clasificación:** Solicitudes enviadas a departamento incorrecto
-- **Textos desordenados:** Ciudadanos envían información desorganizada
-- **Volumen alto:** Especialmente por email, manual y lento
-- **Sin coordinación:** Múltiples canales, procesamiento ineficiente
+## Flujo general
 
-## ✅ La Solución
+1. El ciudadano envia una solicitud desde `/user`.
+2. El backend la valida, la guarda y genera analisis inicial.
+3. El administrador revisa la solicitud desde el panel.
+4. El superadmin puede administrar usuarios.
+5. El sistema guarda respuestas, correcciones, FAQ y metricas.
 
-Plataforma que:
-1. **Centraliza** PQRSDfDf de 5 canales (web, email, chat, teléfono, redes)
-2. **Pre-clasifica** automáticamente con IA (85-95% confianza)
-3. **Asiste** al admin con pre-respuestas sin enviar
-4. **Aprende** del comportamiento humano (correcciones)
-5. **Reduce** 70% del tiempo en clasificación
+## Estructura simple del proyecto
 
----
+### Backend
 
-## 🚀 Características Principales
+| Archivo o carpeta | Para que sirve |
+|---|---|
+| `backend/api/index.js` | Entrada serverless para despliegue. |
+| `backend/app.js` | App Express principal, CORS, seguridad y rutas. |
+| `backend/server.js` | Arranque local del backend. |
+| `backend/config/database.js` | Conexion PostgreSQL. |
+| `backend/config/swagger.js` | Documentacion Swagger/OpenAPI. |
+| `backend/middleware/auth.js` | Verificacion de token, admin y superadmin. |
+| `backend/models/pqr.js` | CRUD de solicitudes y metricas base. |
+| `backend/models/response.js` | Guardado de borradores y respuestas enviadas. |
+| `backend/models/responseTemplate.js` | Plantilla activa y listado de plantillas. |
+| `backend/models/faq.js` | CRUD y metricas de FAQ. |
+| `backend/models/user.js` | CRUD de usuarios, perfiles y metricas. |
+| `backend/models/correction.js` | Registro de correcciones de clasificacion. |
+| `backend/models/emailIngestion.js` | Trazabilidad de correos entrantes. |
+| `backend/models/pqrRelation.js` | Relacion entre solicitudes similares. |
+| `backend/routes/auth.js` | Login, perfil y gestion de usuarios. |
+| `backend/routes/pqrs.js` | Ingesta, FAQ, stats, respuestas y acciones admin. |
+| `backend/services/ai.js` | Analisis con Gemini, OpenAI o fallback local. |
+| `backend/services/faqEngine.js` | Busqueda, ranking y respuesta de FAQ. |
+| `backend/services/pqrsGuidelines.js` | Texto base institucional para respuestas. |
+| `backend/services/storage.js` | Subida de evidencias a Cloudflare R2. |
+| `backend/scripts/initDb.js` | Crea tablas e indices si faltan. |
+| `backend/scripts/init.sql` | Esquema SQL de respaldo. |
+| `backend/scripts/createAdmin.js` | Crea un usuario administrador inicial. |
+| `backend/scripts/demo.sh` | Flujo de demo automatizado. |
+| `backend/knowledge_base.json` | Departamentos y palabras clave para IA. |
+| `backend/ENDPOINTS.md` | Referencia simple de endpoints. |
 
-✨ **Clasificación Automática con IA**
-- OpenAI GPT o Mock (keyword-based)
-- 10 departamentos preconfigurados
-- Detección de multi-dependencias
-- Extracción de topics automática
+### Frontend
 
-📝 **Gestión de Solicitudes**
-- Inbox estilo Gmail filtrado
-- Vista detalle split-screen
-- Acciones: Aceptar, Modificar, Asignar
-- Pre-respuestas sin enviar
+| Archivo o carpeta | Para que sirve |
+|---|---|
+| `frontend/app/root.tsx` | Layout principal de Remix. |
+| `frontend/app/config.ts` | Constantes, canales y URL de API. |
+| `frontend/app/entry.client.tsx` | Entrada cliente de Remix. |
+| `frontend/app/entry.server.tsx` | Entrada servidor de Remix. |
+| `frontend/app/env.server.ts` | Variables de entorno del lado servidor. |
+| `frontend/app/routes/_index.tsx` | Pagina de inicio. |
+| `frontend/app/routes/user.tsx` | Flujo ciudadano principal. |
+| `frontend/app/routes/admin.tsx` | Redireccion al panel admin. |
+| `frontend/app/routes/admin-dashboard.tsx` | Panel principal de admin, metricas y herramientas. |
+| `frontend/app/routes/admin.$id.tsx` | Detalle de una solicitud. |
+| `frontend/app/routes/admin.login.tsx` | Login interno. |
+| `frontend/app/routes/admin.account.tsx` | Perfil de cuenta administrativa. |
+| `frontend/app/routes/preguntas-frecuentes.tsx` | Pagina publica de FAQ. |
+| `frontend/app/routes/consultar-radicado.tsx` | Consulta publica de estado. |
+| `frontend/app/routes/canales.flor-ia.tsx` | Fallback de Flor IA por WhatsApp. |
+| `frontend/app/components/pqrsd-form.tsx` | Formulario ciudadano. |
+| `frontend/app/components/pqrs-status-check.tsx` | Consulta de estado por radicado. |
+| `frontend/app/components/faq-assistant.tsx` | Buscador y asistente de FAQ. |
+| `frontend/app/components/faq-section.tsx` | FAQ publica en la home. |
+| `frontend/app/components/admin-layout.tsx` | Shell del area administrativa. |
+| `frontend/app/components/admin-response-template.tsx` | Editor de plantilla institucional. |
+| `frontend/app/components/admin-faq-manager.tsx` | CRUD de FAQ. |
+| `frontend/app/components/admin-user-manager.tsx` | CRUD de usuarios para superadmin. |
+| `frontend/app/components/admin-pqr-relations.tsx` | Relaciones entre solicitudes. |
+| `frontend/app/components/detail-view.tsx` | Vista detalle y acciones admin. |
+| `frontend/app/components/inbox.tsx` | Lista principal de solicitudes. |
+| `frontend/app/components/channel-view.tsx` | Vista alternativa por canal. |
+| `frontend/app/components/email-importer.tsx` | Importacion de correos. |
+| `frontend/app/components/response-draft.tsx` | Borrador de respuesta. |
+| `frontend/app/components/navbar.tsx` | Navegacion publica. |
+| `frontend/app/components/footer.tsx` | Pie de pagina publico. |
+| `frontend/app/components/hero-section.tsx` | Hero principal de la home. |
+| `frontend/app/components/entities-section.tsx` | Seccion de entidades o areas. |
+| `frontend/app/components/how-works-section.tsx` | Explicacion del flujo. |
+| `frontend/app/components/what-is-pqrs.tsx` | Definicion del servicio. |
+| `frontend/app/components/accessibility-controls.tsx` | Controles de accesibilidad. |
+| `frontend/app/components/toast-notification.tsx` | Notificaciones breves. |
+| `frontend/app/components/client-only.tsx` | Render solo en cliente. |
+| `frontend/app/components/icons.tsx` | Iconos del proyecto. |
+| `frontend/app/utils/auth.ts` | Tokens, usuario guardado y headers. |
+| `frontend/app/tailwind.css` | Estilos globales. |
 
-🔐 **Autenticación & Seguridad**
-- JWT tokens (24h expiration)
-- Admin-only endpoints protegidos
-- bcrypt password hashing
-- CORS configurado
+## Endpoints principales
 
-📈 **Performance & Escalabilidad**
-- Pagination (25 items/página)
-- Auto-refresh configurable (15s/30s/1min/manual)
-- Índices SQL optimizados
-- Reducción: 864K → 86K requests/día
+### Auth
 
-📊 **Real-time Suggestions**
-- Análisis mientras escribe
-- Preview antes de enviar
-- Debounce inteligente (800ms)
-- Confianza visual en vivo
+```text
+POST /api/auth/register
+POST /api/auth/login
+GET  /api/auth/me
+PUT  /api/auth/me/profile
+GET  /api/auth/users
+POST /api/auth/users
+PUT  /api/auth/users/:id
+DELETE /api/auth/users/:id
+```
 
----
+### Solicitudes y panel
 
-## 🛠️ Tech Stack
+```text
+POST /api/ingest
+GET  /api/PQRSDf
+GET  /api/PQRSDf/:id
+POST /api/analyze/:id
+POST /api/PQRSDf/:id/accept
+PUT  /api/PQRSDf/:id/classification
+PUT  /api/PQRSDf/:id/assign
+PUT  /api/PQRSDf/:id/status
+GET  /api/stats
+```
 
-| Componente | Tecnología |
-|-----------|-----------|
-| Backend | Express.js + Node.js |
-| Database | PostgreSQL + Indexed queries |
-| Frontend | Remix v2 + React 18 + TypeScript |
-| Styling | Tailwind CSS v3 |
-| Auth | JWT + bcryptjs |
-| AI | OpenAI API (mock disponible) |
-| Docs | Swagger/OpenAPI + Postman |
+### FAQ y respuestas
 
----
+```text
+GET  /api/faq
+GET  /api/faq/search
+POST /api/faq/ask
+POST /api/faq
+PUT  /api/faq/:id
+DELETE /api/faq/:id
+POST /api/responses/:pqrId
+GET  /api/responses/:pqrId
+GET  /api/responses/templates
+PUT  /api/responses/templates
+```
 
-## ⚡ Quick Start
+## Requisitos
 
-### Requisitos
-- Node.js 18+
-- PostgreSQL 12+
-- npm o yarn
+- Node.js 20 o superior.
+- PostgreSQL.
+- npm.
 
-### Backend Setup
+## Variables de entorno
+
+### Backend
+
+Usa `backend/.env.example` como base. Las variables importantes son:
+
+| Variable | Uso |
+|---|---|
+| `DATABASE_URL` | Conexion principal a PostgreSQL. |
+| `DIRECT_URL` | Conexion directa a la base. |
+| `PORT` | Puerto del backend. |
+| `FRONTEND_URL` | Origen permitido del frontend. |
+| `JWT_SECRET` | Firma de tokens. |
+| `OPENAI_API_KEY` | Analisis con OpenAI. |
+| `GEMINI_API_KEY` | Analisis con Gemini. |
+| `N8N_WEBHOOK_SECRET` | Webhook de correo. |
+| `CLOUDFLARE_ACCOUNT_ID` | Cuenta de Cloudflare R2. |
+| `CLOUDFLARE_R2_BUCKET` | Bucket de evidencias. |
+| `CLOUDFLARE_R2_ACCESS_KEY_ID` | Acceso a R2. |
+| `CLOUDFLARE_R2_SECRET_ACCESS_KEY` | Secreto de R2. |
+| `CLOUDFLARE_R2_PUBLIC_URL` | URL publica opcional para evidencias. |
+
+### Frontend
+
+| Variable | Uso |
+|---|---|
+| `VITE_API_BASE_URL` | URL del backend. Si no existe, usa `http://localhost:8000` en local. |
+| `VITE_MEDELLIN_WEB_URL` | Redireccion del canal web oficial. |
+| `VITE_MEDELLIN_AI_URL` | Redireccion de Flor IA. |
+| `VITE_MEDELLIN_EMAIL_URL` | Redireccion del correo oficial. |
+| `VITE_MEDELLIN_PHONE_URL` | Redireccion telefonica oficial. |
+| `VITE_FLOR_IA_WHATSAPP_URL` | Enlace de WhatsApp para Flor IA. |
+
+## Inicio rapido
+
+### Backend
+
 ```bash
 cd backend
 npm install
-
-# Variables de entorno
 cp .env.example .env
-# Edita .env con tus credenciales de BD
-
 npm start
 ```
-✅ Servidor en `http://localhost:8000`
-📚 Swagger docs: `http://localhost:8000/api/docs`
 
-### Frontend Setup
+El backend crea o actualiza tablas al iniciar. La API queda en `http://localhost:8000` y Swagger en `http://localhost:8000/api/docs`.
+
+### Crear un admin inicial
+
+```bash
+cd backend
+npm run create-admin
+```
+
+Tambien puedes pasar correo, clave y dependencia por variables de entorno o argumentos.
+
+### Frontend
+
 ```bash
 cd frontend
 npm install
-
-# Variables (usar defaults)
-cp .env.example .env
-
 npm run dev
 ```
-✅ App en `http://localhost:5173`
 
-### Database Auto-initialization
-La BD se crea automáticamente al iniciar backend:
-- Tabla `users` (admin)
-- Tabla `PQRSDf` (solicitudes)
-- Tabla `responses` (pre-respuestas)
-- Tabla `corrections` (aprendizaje)
+La aplicacion queda en `http://localhost:5173`.
 
----
-
-## 🎬 DEMO en Hackathon
-
-### Opción 1: Script Automatizado (Recomendado)
-```bash
-cd backend/scripts
-bash demo.sh
-```
-**Automatiza:**
-- ✓ Registra admin
-- ✓ Crea 3 solicitudes (Infra, Salud, Seguridad)
-- ✓ Analiza con IA
-- ✓ Ejecuta admin actions
-- ✓ Muestra estadísticas
-
-**Tiempo:** ~30 segundos
-
-### Opción 2: Manual
-1. Accede a `http://localhost:5173/admin/login`
-2. Registra: `admin@demo.com` / `Demo@12345`
-3. Ve a `/user` → envía 3 solicitudes diferentes
-4. Vuelve a `/admin` → analiza cada una
-5. Prueba: Aceptar, Modificar, Asignar
-6. Muestra pre-respuestas
-
----
-
-## 📁 Project Structure
-
-```
-OmegaHack2026/
-├── backend/
-│   ├── server.js                 (Express app)
-│   ├── config/
-│   │   ├── database.js           (Pool PostgreSQL)
-│   │   └── swagger.js            (API docs)
-│   ├── models/
-│   │   ├── pqr.js                (CRUD + getStats)
-│   │   ├── response.js           (Pre-respuestas)
-│   │   ├── correction.js         (Learning system)
-│   │   └── user.js               (Auth)
-│   ├── routes/
-│   │   ├── PQRSDf.js               (15+ endpoints)
-│   │   └── auth.js               (login/register)
-│   ├── middleware/
-│   │   └── auth.js               (JWT verification)
-│   ├── services/
-│   │   └── ai.js                 (OpenAI + Mock)
-│   ├── scripts/
-│   │   ├── initDb.js             (DB initialization)
-│   │   ├── init.sql              (Schema backup)
-│   │   └── demo.sh               (Demo automation)
-│   └── knowledge_base.json       (10 departments)
-│
-├── frontend/
-│   ├── app/
-│   │   ├── root.tsx              (Layout raíz)
-│   │   ├── config.ts             (Constants + API_URL)
-│   │   ├── routes/
-│   │   │   ├── _index.tsx        (Home)
-│   │   │   ├── user.tsx          (Form ciudadano)
-│   │   │   ├── admin.tsx         (Dashboard inbox)
-│   │   │   └── admin.$id.tsx     (Detail view)
-│   │   ├── components/
-│   │   │   ├── PQRSDfDf-form.tsx    (+ Real-time suggestions!)
-│   │   │   ├── detail-view.tsx   (+ Modales)
-│   │   │   ├── inbox.tsx         (Listado)
-│   │   │   ├── response-draft.tsx(Pre-respuestas)
-│   │   │   ├── admin-layout.tsx  (Layout)
-│   │   │   ├── navbar.tsx        (Nav)
-│   │   │   └── toast-notification.tsx (NEW!)
-│   │   └── utils/
-│   │       └── auth.ts           (Token management)
-│   └── tailwind.config.ts        (Styling)
-│
-└── docs/
-    ├── README.md                 (Este archivo)
-    ├── ANALISIS_ARQUITECTONICO.md(Análisis exhaustivo)
-    ├── TODO.md                   (Roadmap del proyecto)
-    ├── PROGRESS.md               (Estado actual)
-    └── SETUP.md                  (Instrucciones)
-```
-
----
-
-## 🔑 Endpoints API
-
-### Auth
-```
-POST /api/auth/register         Register new admin
-POST /api/auth/login            Login & get token
-```
-
-### PQRSDfDf (Public - Sin auth)
-```
-POST /api/ingest                Submit new PQRSDfDf
-POST /api/analyze-preview       Real-time preview (NUEVO!)
-```
-
-### PQRSDfDf (Protected - Admin)
-```
-GET  /api/PQRSDf                  List with pagination
-GET  /api/PQRSDf/:id              Get detail
-POST /api/analyze/:id           Analyze with IA
-POST /api/PQRSDf/:id/accept       Accept classification
-PUT  /api/PQRSDf/:id/classification Modify classification
-PUT  /api/PQRSDf/:id/assign       Assign to department
-PUT  /api/PQRSDf/:id/status       Update status
-GET  /api/stats                 Dashboard metrics
-```
-
-### Responses
-```
-POST /api/responses/:pqrId      Save/send pre-respuesta
-GET  /api/responses/:pqrId      Get current draft
-```
-
----
-
-## 🎯 Casos de Uso
+## Uso rapido
 
 ### Ciudadano
-1. Accede a `/user` (sin login)
-2. Selecciona canal
-3. Escribe solicitud (min 20 chars)
-4. Ve sugerencia IA en tiempo real ✨
-5. Envía
 
-### Admin
-1. Login en `/admin/login`
-2. Ve inbox filtrado por dependencia
-3. Clickea PQRSDfDf → detail view
-4. Lee análisis IA
-5. Elige: Aceptar / Modificar / Asignar
-6. Escribe pre-respuesta (no envía)
-7. Sistema aprende de correcciones
+1. Abre `/user`.
+2. Escribe la solicitud.
+3. Adjunta evidencias si aplica.
+4. Enviala y guarda el radicado.
 
----
+### Administrador
 
-## 📊 Métricas de Impacto
+1. Abre `/admin/login`.
+2. Entra al panel.
+3. Revisa inbox, detalle, respuestas, FAQ, metricas y relaciones.
+4. Si el usuario tiene rol `superadmin`, tambien puede gestionar usuarios.
 
-| Métrica | Valor | Mejora |
-|---------|-------|--------|
-| Tiempo clasificación manual | 15 min | 70% ↓ |
-| Pre-clasificación IA | 45 seg | |
-| Validación humana | 2-3 min | |
-| Solicitudes/hora | 4 → 12 | 3x ↑ |
-| Errores clasificación | 20% → 5% | 15p ↓ |
-| Requests API/día | 864K → 86K | 10x ↓ |
-| Time-to-resolution | 48h → 24h | 2x ↑ |
+## Notas
 
----
-
-## 🔒 Seguridad
-
-✅ **Implementado**
-- JWT authentication (24h expiration)
-- Password hashing con bcrypt (12 rounds)
-- CORS restringido a frontend URL
-- Helmet headers (XSS, clickjacking protection)
-- SQL injection prevention (prepared statements)
-- Rate limiting en endpoints sensibles
-- Input validation (content length, channel whitelist)
-
-⚠️ **Para Producción**
-- Usar HTTPS
-- Secrets en variables de entorno
-- Rate limiting más estricto
-- API key rotations
-- Audit logging
-- Backup automático de BD
-
----
-
-## 🚀 Deployment
-
-### Docker (Recomendado)
-```bash
-docker-compose up -d
-```
-Compone: PostgreSQL + Backend + Frontend
-
-### Heroku/Railway
-```bash
-git push heroku main
-```
-Configura variables de entorno en dashboard
-
-### Manual
-1. Instala PostgreSQL en servidor
-2. `npm install` en backend y frontend
-3. `npm run build` en frontend
-4. Inicia con `npm start`
-5. Configure Nginx/Apache como proxy
-
----
-
-## 🐛 Troubleshooting
-
-**Error: Cannot connect to database**
-```bash
-# Verifica que PostgreSQL está corriendo
-psql -U postgres -c "SELECT 1"
-```
-
-**Frontend no ve API**
-```bash
-# Revisa API_BASE_URL en config.ts
-# Debe ser http://localhost:8000/api
-```
-
-**Error: Unauthorized 401**
-```bash
-# Token expirado o inválido
-# Limpia localStorage en DevTools
-localStorage.clear()
-# Vuelve a login
-```
-
----
-
-## 📚 Documentación
-
-- **API Docs:** `http://localhost:8000/api/docs` (Swagger)
-- **Análisis:** [ANALISIS_ARQUITECTONICO.md](ANALISIS_ARQUITECTONICO.md)
-- **Roadmap:** [TODO.md](TODO.md)
-- **Progress:** [PROGRESS.md](PROGRESS.md)
-- **Setup:** [SETUP.md](SETUP.md)
-
----
-
-## 🎓 Aprendizajes Clave
-
-1. **Validación en múltiples niveles:** Frontend + Backend + DB
-2. **Pagination crucial:** Sin ella, 1000+ items = lento
-3. **Real-time UX:** Debounce (800ms) + skeleton loaders
-4. **IA debe tener fallback:** OpenAI mock siempre disponible
-5. **Modales no son malos:** Si son accesibles y responsivos
-6. **Componentes reutilizables:** Toast, Modal, DetailView
-
----
-
-## ✨ Features Bonus Implementadas
-
-🆕 **Real-time Suggestions** (v0.2)
-- Análisis mientras escribes
-- Preview antes de enviar
-- Debounce inteligente
-
-🆕 **Toast Notifications** (v0.2)
-- Feedback visual de acciones
-- Auto-dismiss después de 4s
-- Slide-in animation
-
-🆕 **Pagination** (v0.2)
-- 25 items por página
-- Controles Anterior/Siguiente
-- Metadata (total, páginas)
-
-🆕 **Admin.$id Route** (v0.2)
-- Detail view mejorada
-- Sidebar con stats
-- Loading states
-
----
-
-## 🤝 Contribuyendo
-
-1. Fork el repo
-2. Crea una rama (`git checkout -b feature/mi-feature`)
-3. Commit cambios (`git commit -am 'Add mi-feature'`)
-4. Push a rama (`git push origin feature/mi-feature`)
-5. Abre Pull Request
-
----
-
-## 📝 Licencia
-
-MIT - Libre para usar en hackathon y más allá
-
----
-
-## 👥 Equipo
-
-Desarrollado para **OmegaHack 2026**
-
-**Última actualización:** Abril 2026
-**Estado:** MVP Completo + Bonus Features
-
----
-
-## 🎉 Ready for Demo!
-
-```bash
-# Terminal 1: Backend
-cd backend && npm start
-
-# Terminal 2: Frontend
-cd frontend && npm run dev
-
-# Terminal 3: Demo (opcional)
-cd backend/scripts && bash demo.sh
-```
-
-**Acceso:**
-- 🌐 Frontend: http://localhost:5173
-- 🔐 Admin: http://localhost:5173/admin/login
+- El formulario valida longitud minima y maxima, bloquea lenguaje no permitido y limita formatos de archivo.
+- El backend limita a 3 radicados por hora por usuario o IP para reducir spam.
+- La documentacion tecnica adicional esta en `backend/ENDPOINTS.md`.
+- El inventario interno de funciones por archivo esta en `INTERNAL_FUNCTIONS.md`.
 - 📚 API Docs: http://localhost:8000/api/docs
 
 ¡**Let's go! 🚀**

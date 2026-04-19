@@ -1,284 +1,140 @@
-# 🎯 Guía de Ejecución - MVP OmegaHack 2026
+# Setup
 
-## Paso 1: Preparar PostgreSQL Local
+Guia corta para levantar Jupiter en local.
 
-### En PowerShell o Command Prompt:
+## Requisitos
 
-```bash
-# Crear la base de datos
-createdb PQRSDf_db
+- Node.js 20 o superior
+- PostgreSQL
+- npm
 
-# Crear la tabla (conectar a la BD y ejecutar el SQL)
-psql PQRSDf_db -f "c:\Users\samir\Desktop\OmegaHack2026\backend\scripts\init.sql"
-```
-
-**Verificar que funcionó:**
-```bash
-psql PQRSDf_db -c "SELECT * FROM PQRSDf;"
-```
-
-Debería mostrar una tabla vacía (sin errores).
-
----
-
-## Paso 2: Iniciar Backend (Terminal 1)
+## 1. Backend
 
 ```bash
-cd c:\Users\samir\Desktop\OmegaHack2026\backend
-
-# Instalar dependencias (ya está hecho)
+cd backend
 npm install
+cp .env.example .env
+```
 
-# Iniciar servidor
+Completa `backend/.env` con al menos:
+
+- `DATABASE_URL`
+- `DIRECT_URL`
+- `JWT_SECRET`
+- `FRONTEND_URL`
+- `PORT`
+
+Opcionales:
+
+- `OPENAI_API_KEY` o `GEMINI_API_KEY`
+- `N8N_WEBHOOK_SECRET`
+- credenciales de Cloudflare R2
+
+Luego inicia el backend:
+
+```bash
 npm start
 ```
 
-**Debe mostrar:**
-```
-Server running on port 8000
-```
+Verificaciones:
 
-**Verificar que funciona:**
 ```bash
-# En otra terminal
 curl http://localhost:8000/health
-# Debe responder: {"status":"OK"}
 ```
 
----
+Swagger:
 
-## Paso 3: Iniciar Frontend (Terminal 2)
+```text
+http://localhost:8000/api/docs
+```
+
+## 2. Frontend
 
 ```bash
-cd c:\Users\samir\Desktop\OmegaHack2026\frontend
-
-# Instalar dependencias (ya está hecho)
+cd frontend
 npm install
-
-# Iniciar servidor
 npm run dev
 ```
 
-**Debe mostrar URL:**
+El frontend usa `http://localhost:8000` como API por defecto si no defines `VITE_API_BASE_URL`.
+
+URL local:
+
+```text
+http://localhost:5173
 ```
-Local:        http://localhost:5173
-```
 
-Abre en navegador: http://localhost:5173
-
----
-
-## Paso 4: Probar el Flujo Completo
-
-### 4A. Enviar PQRSDfDf (Lado Ciudadano)
-
-1. En navegador, ve a http://localhost:5173
-2. Haz clic en **"Enviar PQRSDfDf"** (botón azul)
-3. Llena el formulario:
-   - **Canal**: Selecciona "🌐 Sitio Web"
-   - **Solicitud**: Escribe algo como:
-     ```
-     "La vía en la carrera 45 con calle 10 está muy dañada.
-     Hay huecos grandes que ponen en riesgo a los vehículos."
-     ```
-4. Haz clic **"✅ Enviar Solicitud"**
-5. Deberías ver: "✅ PQRSDfDf enviada exitosamente!"
-
----
-
-### 4B. Ver en Admin Inbox (Lado Administrador)
-
-1. Ve a http://localhost:5173
-2. Haz clic en **"Panel Admin"** (botón morado)
-3. Deberías ver tu solicitud en la lista:
-   ```
-   🌐 Sin clasificar | ⏳ Pendiente | Preview del texto...
-   ```
-
-**Estadísticas en la parte inferior:**
-- Pendientes: 1
-- Analizadas: 0
-- Asignadas: 0
-- Resueltas: 0
-
----
-
-### 4C. Analizar con IA
-
-1. Haz clic en tu solicitud en el inbox
-2. Verás la pantalla dividida:
-   - **Izquierda**: Tu solicitud original
-   - **Derecha**: Estado y botones de acciones
-3. En la parte superior, verás el botón azul **"🤖 Analizar con IA"**
-4. Haz clic en él
-5. Espera 2-3 segundos (o 10-15 si usas OpenAI real)
-6. La página se actualizará automáticamente con:
-   - **Clasificación**: "Infraestructura"
-   - **Confianza**: 85-95%
-   - **Resumen**: Texto estructurado
-   - **Temas**: ["vías", "reparación", etc.]
-   - **Alerta**: Si detecta multi-dependencias
-
----
-
-### 4D. Acciones del Admin
-
-Una vez analizado:
-
-1. **Cambiar Estado**:
-   - Dropdown en "Estado" para cambiar: Pendiente → Analizado → Asignado → Resuelto
-
-2. **Aceptar Clasificación**:
-   - Botón verde "✅ Aceptar Clasificación"
-
-3. **Modificar Clasificación**:
-   - Botón amarillo "✏️ Modificar Clasificación" (TBD en siguiente iteración)
-
-4. **Asignar a Dependencia**:
-   - Botón azul "📤 Asignar a Dependencia" (TBD)
-
----
-
-## Paso 5: Probar Multicanal
-
-El sistema simula diferentes canales:
-
-1. Envía solicitudes por diferentes canales en `/user`:
-   - 📧 Email
-   - 💬 Chat
-   - ☎️ Teléfono
-   - 📱 Redes Sociales
-
-2. En el admin inbox, cada una aparecerá con su ícono correspondiente
-
-3. Todas se analizan de la misma manera
-
----
-
-## Paso 6: Verificar BD
+## 3. Crear un admin inicial
 
 ```bash
-# Ver todas las solicitudes en PostgreSQL
-psql PQRSDf_db -c "SELECT id, status, classification, confidence FROM PQRSDf;"
+cd backend
+npm run create-admin
 ```
 
-**Ejemplo de output:**
-```
- id | status   | classification | confidence
-----|----------|----------------|------------
-  1 | pending  | NULL           | NULL
-  2 | analyzed | Infraestructura| 87
-  3 | assigned | Movilidad      | 92
-```
+Tambien puedes pasar correo, clave y dependencia por argumentos:
 
----
-
-## 🐛 Troubleshooting
-
-### ❌ "Connection refused" al iniciar backend
-
-**Solución:**
-1. Verifica que PostgreSQL esté corriendo
-2. Verifica las credenciales en `backend/.env`
-3. Intenta conectar directamente:
-   ```bash
-   psql -U postgres
-   ```
-
-### ❌ Backend inicia pero no hay datos
-
-**Verifica:**
 ```bash
-psql PQRSDf_db -c "\dt"  # Ver tablas
-psql PQRSDf_db -c "SELECT * FROM PQRSDf;"  # Ver datos
+npm run create-admin -- admin@jupiter.test Admin123456 Infraestructura
 ```
 
-Si la tabla no existe, re-ejecuta:
+## 4. Primera prueba
+
+1. Abre `/user`.
+2. Envía una solicitud con texto valido y sin groserias.
+3. Abre `/admin/login`.
+4. Entra al panel y revisa la solicitud.
+5. Prueba el flujo de FAQ, plantillas, metricas y usuarios si tu cuenta es `superadmin`.
+
+## 5. Base de datos
+
+El backend intenta crear o actualizar las tablas al iniciar.
+Si quieres aplicar el SQL manualmente:
+
 ```bash
-psql PQRSDf_db -f "backend/scripts/init.sql"
+psql "$DATABASE_URL" -f backend/scripts/init.sql
 ```
 
-### ❌ Frontend no ve el backend
+## 6. Problemas comunes
 
-**Verificar:**
-1. Backend está en http://localhost:8000 ✓
-2. Puedes hacer curl:
-   ```bash
-   curl http://localhost:8000/api/PQRSDf
-   ```
-   Debe retornar JSON
+### No conecta a PostgreSQL
 
-3. CORS está habilitado en `backend/server.js` ✓
+- Revisa `DATABASE_URL`.
+- Verifica que PostgreSQL esté activo.
+- Confirma que la base exista y acepte conexiones.
 
-### ❌ IA no clasifica correctamente
+### El frontend no llama al backend
 
-**Si usas Mock (por defecto):**
-- Revisa `backend/knowledge_base.json`
-- Agrega más keywords para mejorar
+- Revisa `VITE_API_BASE_URL`.
+- Si no lo defines en local, debe usar `http://localhost:8000`.
 
-**Si usas OpenAI:**
-1. Verifica API key en `backend/.env`
-2. Verifica que tienes saldo en OpenAI
-3. Revisa logs del backend
+### Login ok pero no ves usuarios
 
----
+- Solo aparece el modulo de usuarios si el rol es `superadmin`.
+- El rol se puede revisar en la tabla `users`.
 
-## 📊 Demo Script (Copia y Pega)
+### El formulario no deja enviar
 
-Envia 3 solicitudes automáticas:
+- El texto debe tener entre 20 y 5000 caracteres.
+- No puede contener palabras bloqueadas.
+- Solo se admiten formatos permitidos para imagen y documento.
 
-**Terminal (en el folder del proyecto):**
-```bash
-# Solicitud 1: Infraestructura
-curl -X POST http://localhost:8000/api/ingest \
-  -H "Content-Type: application/json" \
-  -d '{"content":"La vía en carrera 45 está dañada, hay muchos huecos","channel":"web"}'
+## 7. Archivos que conviene revisar primero
 
-# Solicitud 2: Movilidad  
-curl -X POST http://localhost:8000/api/ingest \
-  -H "Content-Type: application/json" \
-  -d '{"content":"Los semáforos en la calle 10 no funcionan correctamente","channel":"email"}'
+- `backend/server.js`
+- `backend/app.js`
+- `backend/routes/pqrs.js`
+- `backend/routes/auth.js`
+- `backend/scripts/initDb.js`
+- `frontend/app/routes/_index.tsx`
+- `frontend/app/routes/user.tsx`
+- `frontend/app/routes/admin-dashboard.tsx`
+- `frontend/app/components/pqrsd-form.tsx`
+- `frontend/app/components/admin-user-manager.tsx`
 
-# Solicitud 3: Seguridad
-curl -X POST http://localhost:8000/api/ingest \
-  -H "Content-Type: application/json" \
-  -d '{"content":"Ha habido robos frecuentes en el parque de mi barrio","channel":"phone"}'
+## 8. Inventario interno de funciones
 
-# Ver todas
-curl http://localhost:8000/api/PQRSDf
-```
+Para revisar funciones por archivo de forma rapida usa:
 
-Luego abre http://localhost:5173/admin y verás las 3 solicitudes.
+- `INTERNAL_FUNCTIONS.md`
 
----
-
-## ✅ Checklist Final
-
-- [ ] PostgreSQL corriendo
-- [ ] Backend iniciado en puerto 8000
-- [ ] Frontend iniciado en puerto 5173
-- [ ] Puedo acceder a http://localhost:5173
-- [ ] Puedo enviar una PQRSDfDf
-- [ ] Aparece en el admin inbox
-- [ ] Puedo analizarla con IA
-- [ ] Aparecen clasificación, resumen y topics
-- [ ] Puedo cambiar estado
-
-**Si todo ✅ → MVP Funcional ✅**
-
----
-
-## 📹 Notas para el Pitch
-
-Durante la presentación:
-
-1. **Mostrar Home**: "Dos lados del sistema - Ciudadano y Admin"
-2. **Enviar PQRSDfDf**: "Simple, sin autenticación, solo lo importante"
-3. **Ver en Admin**: "Inbox Gmail-like para gestión rápida"
-4. **Analizar**: "IA automática - clasificación + resumen + topics"
-5. **Cambiar Estado**: "Humano valida y decide - no reemplazamos"
-6. **Multicanal**: "Email, Chat, Web, Teléfono, Redes - todo centralizado"
-
----
-
-¡Listo! Ahora deberías tener un MVP completamente funcional. 🚀
+Este archivo se genero con un barrido de `backend` y `frontend/app` excluyendo `node_modules`.
