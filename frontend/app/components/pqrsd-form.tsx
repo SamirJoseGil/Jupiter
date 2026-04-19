@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { API_BASE_URL, CHANNELS } from "~/config";
+import ClientOnly from "./client-only";
 
 type Channel = "web" | "email" | "chat" | "phone" | "social";
 
@@ -111,14 +112,15 @@ export default function PQRSDForm({ onSuccess }: PQRSDFormProps) {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45 }}
-      className="mx-auto max-w-3xl rounded-3xl border border-white/30 bg-white/70 p-8 shadow-2xl backdrop-blur-xl"
-    >
-      <h2 className="mb-2 text-3xl font-black text-slate-900">Envia tu Solicitud</h2>
-      <p className="mb-6 text-sm text-slate-600">Canal ciudadano para peticiones, quejas, reclamos y sugerencias.</p>
+    <ClientOnly>
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45 }}
+        className="mx-auto max-w-3xl rounded-3xl border border-slate-200 bg-white p-8 shadow-lg"
+      >
+        <h2 className="mb-2 text-3xl font-black text-slate-900">Envia tu Solicitud</h2>
+        <p className="mb-6 text-sm text-slate-600">Canal ciudadano para peticiones, quejas, reclamos y sugerencias.</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Canal */}
@@ -168,7 +170,7 @@ export default function PQRSDForm({ onSuccess }: PQRSDFormProps) {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
-              className="rounded-2xl border border-cyan-300/40 bg-gradient-to-r from-cyan-50/80 to-amber-50/80 p-4"
+              className="rounded-2xl border border-cyan-200 bg-gradient-to-r from-cyan-50 to-amber-50 p-4"
             >
             <div className="flex items-start gap-3">
               <span className="text-2xl">🤖</span>
@@ -242,6 +244,7 @@ export default function PQRSDForm({ onSuccess }: PQRSDFormProps) {
       <p className="mt-4 text-center text-xs text-slate-500">
         Tu solicitud será revisada por nuestro equipo dentro de 15 días hábiles.
       </p>
-    </motion.div>
+      </motion.div>
+    </ClientOnly>
   );
 }
