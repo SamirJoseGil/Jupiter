@@ -314,11 +314,6 @@ router.get('/pqrs', verifyToken, verifyAdmin, async (req, res) => {
     if (department) filters.department = department;
     if (page) filters.page = parseInt(page);
     if (limit) filters.limit = parseInt(limit);
-    
-    // If user has department, filter by it
-    if (req.user.department && !department) {
-      filters.department = req.user.department;
-    }
 
     // Use pagination if explicitly requested or if page is provided
     if (paginate === 'true' || page) {
