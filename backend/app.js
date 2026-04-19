@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const swaggerUi = require('swagger-ui-express');
-const PQRSDfRoutes = require('./routes/PQRSDf');
+const pqrsRoutes = require('./routes/pqrs');
 const authRoutes = require('./routes/auth');
 const swaggerSpec = require('./config/swagger');
 
@@ -50,7 +50,7 @@ app.get('/api/docs.json', (req, res) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api', PQRSDfRoutes);
+app.use('/api', pqrsRoutes);
 
 // Health Check
 app.get('/health', (req, res) => {
