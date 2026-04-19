@@ -120,7 +120,10 @@ export default function Footer() {
           <p className="text-sm text-slate-400">
             © {currentYear} Alcaldía de Medellín. Todos los derechos reservados.
           </p>
-          <div className="flex gap-6 text-sm">
+            <div className="flex flex-col gap-2 text-sm md:flex-row md:items-center md:gap-6">
+              <span className="text-slate-400">
+                Desarrollado por <a href="https://www.sglabs.site/" target="_blank" rel="noopener noreferrer" className="text-[#7FA2E8] hover:text-white transition">SGLabs</a>
+              </span>
             <a href="/" className="text-slate-400 hover:text-[#7FA2E8] transition">
               Términos y Condiciones
             </a>

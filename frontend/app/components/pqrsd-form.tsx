@@ -221,6 +221,7 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
     e.preventDefault();
     setLoading(true);
     setMessage("");
+    const isAnonymousSubmission = !citizenId.trim();
 
     if (shouldRedirectToExternal && officialConfig) {
       window.open(officialConfig.redirectUrl, "_blank", "noopener,noreferrer");
@@ -284,7 +285,11 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
 
       const data = await response.json();
       setMessageType("success");
-      setMessage(`PQRSDF enviada exitosamente. Radicado #${data?.pqr?.id ?? 'N/D'}`);
+      setMessage(
+        isAnonymousSubmission
+          ? `Tu solicitud fue enviada correctamente. En los próximos días será resuelta. Debes estar pendiente a nuestra página con el siguiente radicado #${data?.pqr?.id ?? 'N/D'} o buscar en el banco de preguntas frecuentes.`
+          : `PQRSDF enviada exitosamente. Radicado #${data?.pqr?.id ?? 'N/D'}`
+      );
       setContent("");
       setCitizenId("");
       setNeighborhood("");
