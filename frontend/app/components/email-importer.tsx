@@ -187,7 +187,7 @@ Tengo un problema grave con los huecos en la avenida principal...`}
                 <span className="animate-spin">...</span> Importando...
               </>
             ) : (
-              <>Importar como PQRS</>
+              <>Importar como PQRSDf</>
             )}
           </button>
 

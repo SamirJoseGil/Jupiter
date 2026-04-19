@@ -66,7 +66,7 @@ export default function WhatIsPQRSDf() {
             className="mb-16 text-center space-y-4"
           >
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900">
-              ¿Qué es una PQRS?
+              ¿Qué es una PQRSDf?
             </h2>
             <p className="text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto">
               Aquí explicamos cómo funciona el canal institucional para que radicar una solicitud sea claro, directo y sin intermediarios.

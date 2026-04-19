@@ -24,7 +24,7 @@ export default function UserPage() {
               ¡Solicitud Enviada!
             </h1>
             <p className="mb-6 text-slate-600">
-              Tu PQRS ha sido registrada en el sistema. 
+              Tu PQRSDf ha sido registrada en el sistema. 
               Será revisada por nuestro equipo dentro de 15 días hábiles.
             </p>
             <p className="mb-6 text-sm text-slate-500">

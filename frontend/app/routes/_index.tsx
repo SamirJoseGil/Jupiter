@@ -8,12 +8,12 @@ import HowWorksSection from "~/components/how-works-section";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "PQRS Hub - Plataforma Oficial PQRS Medellín" },
+    { title: "Jupiter" },
     { name: "description", content: "Plataforma municipal oficial para radicar peticiones, quejas, reclamos, sugerencias y denuncias en Medellín. Gestión inteligente con IA y seguimiento en tiempo real." },
-    { name: "keywords", content: "PQRS, Medellín, Alcaldía, peticiones, quejas, reclamos, sugerencias, denuncias" },
+    { name: "keywords", content: "PQRSDf, Medellín, Alcaldía, peticiones, quejas, reclamos, sugerencias, denuncias" },
     { name: "author", content: "Alcaldía de Medellín" },
-    { property: "og:title", content: "PQRS Hub - Plataforma Oficial PQRS Medellín" },
-    { property: "og:description", content: "Radicar y seguir tus PQRS ante la administración municipal con transparencia y eficiencia." },
+    { property: "og:title", content: "Jupiter" },
+    { property: "og:description", content: "Radicar y seguir tus PQRSDf ante la administración municipal con transparencia y eficiencia." },
     { property: "og:type", content: "website" },
     { name: "theme-color", content: "#3366CC" },
   ];

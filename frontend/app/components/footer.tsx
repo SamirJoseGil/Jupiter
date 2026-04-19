@@ -30,7 +30,7 @@ export default function Footer() {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/#que-es" className="text-slate-300 hover:text-[#7FA2E8] transition">
-                  ¿Qué es una PQRS?
+                  ¿Qué es una PQRSDf?
                 </Link>
               </li>
               <li>

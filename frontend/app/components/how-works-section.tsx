@@ -7,7 +7,7 @@ export default function HowWorksSection() {
   const steps = [
     {
       number: 1,
-      title: "Radicar tu PQRS",
+      title: "Radicar tu PQRSDf",
       description: "Completa el formulario con los detalles de tu petición, queja, reclamo, sugerencia o denuncia.",
       icon: FormIcon,
     },
@@ -112,13 +112,13 @@ export default function HowWorksSection() {
                 ¿Listo para comenzar?
               </h3>
               <p className="text-slate-600 text-lg mb-6">
-                Radicar tu PQRS es rápido, seguro y se gestiona directamente dentro del proceso institucional.
+                Radicar tu PQRSDf es rápido, seguro y se gestiona directamente dentro del proceso institucional.
               </p>
               <a
                 href="/user"
                 className="inline-block rounded-2xl bg-slate-900 px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-slate-800 active:scale-95"
               >
-                Radicar PQRS Ahora
+                Radicar PQRSDf Ahora
               </a>
             </div>
           </motion.div>

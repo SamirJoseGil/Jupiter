@@ -5,15 +5,17 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  useLoaderData,
 } from "@remix-run/react";
-import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
+import type { LinksFunction, MetaFunction } from "@remix-run/node";
 
 import "./tailwind.css";
 import AccessibilityControls from "~/components/accessibility-controls";
 
+export const meta: MetaFunction = () => [{ title: "Jupiter" }];
+
 // 🔗 Cargar fuentes y estilos
 export const links: LinksFunction = () => [
+  { rel: "icon", type: "image/png", href: "/img/Logo.png" },
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
     rel: "preconnect",

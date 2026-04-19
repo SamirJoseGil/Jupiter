@@ -109,10 +109,10 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
         body: JSON.stringify({ content, channel }),
       });
 
-      if (!response.ok) throw new Error("Error submitting PQRS");
+      if (!response.ok) throw new Error("Error submitting PQRSDf");
 
       await response.json();
-      setMessage("PQRS enviada exitosamente!");
+      setMessage("PQRSDf enviada exitosamente!");
       setContent("");
       setChannel("official-web");
 

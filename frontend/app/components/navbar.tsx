@@ -25,7 +25,7 @@ export default function Navbar() {
           {/* Centro: enlaces de navegación */}
           <div className="hidden md:flex items-center gap-6 text-sm font-medium">
             <a href="/#que-es" className="text-white/90 hover:text-white transition">
-              ¿Qué es PQRS?
+              ¿Qué es PQRSDf?
             </a>
             <a href="/#entidades" className="text-white/90 hover:text-white transition">
               Entidades
@@ -40,7 +40,7 @@ export default function Navbar() {
             to="/user"
             className="flex items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/15 active:scale-95"
           >
-            Radicar PQRS
+            Radicar PQRSDf
             <ArrowRightIcon className="w-4 h-4" />
           </Link>
         </div>

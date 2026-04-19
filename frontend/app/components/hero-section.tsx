@@ -32,7 +32,7 @@ export default function HeroSection() {
                 <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black leading-tight text-slate-900">
                   Atención institucional
                   <br />
-                  <span className="text-slate-700">para tus PQRS</span>
+                  <span className="text-slate-700">para tus PQRSDf</span>
                 </h1>
               </div>
 
@@ -45,7 +45,7 @@ export default function HeroSection() {
                   to="/user"
                   className="inline-flex items-center justify-center gap-3 rounded-2xl bg-slate-900 px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-slate-800 active:scale-95"
                 >
-                  Radicar PQRS Ahora
+                  Radicar PQRSDf Ahora
                   <ArrowRightIcon className="w-5 h-5" />
                 </Link>
                 <a
