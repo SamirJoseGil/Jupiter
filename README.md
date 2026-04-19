@@ -8,6 +8,10 @@ Jupiter es una plataforma para radicar, clasificar y gestionar PQRSDF con una vi
 
 ## ![Link a la pagina](/data/qrcode_jupiter.sglabs.site.png)
 
+
+## **Link de las diapositivas:** https://canva.link/3h82hx8ia91826p
+
+
 ## Que incluye
 
 - Formulario ciudadano con sugerencias en tiempo real.
