@@ -1,5 +1,20 @@
 export const API_BASE_URL = (() => {
-  return import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  const configured = (import.meta.env.VITE_API_BASE_URL || '').trim();
+
+  if (configured) {
+    return configured.replace(/\/$/, '');
+  }
+
+  // In local dev, default to backend on port 8000.
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'http://localhost:8000';
+    }
+  }
+
+  // In deployed environments without explicit env, use same-origin API.
+  return '';
 })();
 
 export const AUTH_STORAGE_KEY = 'jupiter_auth_token';

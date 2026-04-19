@@ -2,9 +2,75 @@ const pool = require('../config/database');
 
 const VALID_CHANNELS = ['web', 'email', 'chat', 'phone', 'social'];
 const VALID_STATUSES = ['pending', 'analyzed', 'assigned', 'resolved'];
+const TABLE_CANDIDATES = ['pqrs', 'pqrsdf'];
+
+let resolvedTableName;
+
+const getPreferredTable = async () => {
+  if (resolvedTableName) {
+    return resolvedTableName;
+  }
+
+  const explicitTable = (process.env.PQR_TABLE || '').trim().toLowerCase();
+
+  const tablesResult = await pool.query(
+    `
+      SELECT table_name
+      FROM information_schema.tables
+      WHERE table_schema = 'public'
+        AND table_name = ANY($1::text[])
+    `,
+    [TABLE_CANDIDATES]
+  );
+
+  const existingTables = tablesResult.rows.map((row) => row.table_name);
+
+  if (explicitTable && existingTables.includes(explicitTable)) {
+    resolvedTableName = explicitTable;
+    return resolvedTableName;
+  }
+
+  if (existingTables.length === 0) {
+    throw new Error('No PQR table found (expected pqrs or pqrsdf)');
+  }
+
+  if (existingTables.length === 1) {
+    resolvedTableName = existingTables[0];
+    return resolvedTableName;
+  }
+
+  const counts = await Promise.all(
+    existingTables.map(async (tableName) => {
+      const countResult = await pool.query(`SELECT COUNT(*)::int AS total FROM ${tableName}`);
+      return { tableName, total: countResult.rows[0].total };
+    })
+  );
+
+  counts.sort((a, b) => {
+    if (b.total !== a.total) {
+      return b.total - a.total;
+    }
+    if (a.tableName === 'pqrs') {
+      return -1;
+    }
+    if (b.tableName === 'pqrs') {
+      return 1;
+    }
+    return 0;
+  });
+
+  resolvedTableName = counts[0].tableName;
+  return resolvedTableName;
+};
 
 class PQR {
+  static async getTableName() {
+    return getPreferredTable();
+  }
+
   static async create({ content, channel, assignedDepartment = null }) {
+    const tableName = await this.getTableName();
+
     // Validation
     if (!content || typeof content !== 'string') {
       throw new Error('Content is required and must be a string');
@@ -19,7 +85,7 @@ class PQR {
     }
 
     const query = `
-      INSERT INTO PQRSDf (content, channel, assigned_department, status, created_at)
+      INSERT INTO ${tableName} (content, channel, assigned_department, status, created_at)
       VALUES ($1, $2, $3, 'pending', NOW())
       RETURNING *;
     `;
@@ -34,7 +100,8 @@ class PQR {
   }
 
   static async getAll(filters = {}) {
-    let query = 'SELECT * FROM PQRSDf WHERE 1=1';
+    const tableName = await this.getTableName();
+    let query = `SELECT * FROM ${tableName} WHERE 1=1`;
     let params = [];
     let paramIndex = 1;
 
@@ -68,12 +135,13 @@ class PQR {
   }
 
   static async getAllPaginated(filters = {}) {
+    const tableName = await this.getTableName();
     const page = Math.max(1, parseInt(filters.page) || 1);
     const limit = Math.min(parseInt(filters.limit) || 25, 100);
     const offset = (page - 1) * limit;
 
-    let countQuery = 'SELECT COUNT(*)::int AS total FROM PQRSDf WHERE 1=1';
-    let dataQuery = 'SELECT * FROM PQRSDf WHERE 1=1';
+    let countQuery = `SELECT COUNT(*)::int AS total FROM ${tableName} WHERE 1=1`;
+    let dataQuery = `SELECT * FROM ${tableName} WHERE 1=1`;
     let params = [];
     let paramIndex = 1;
 
@@ -125,16 +193,20 @@ class PQR {
   }
 
   static async getById(id) {
+    const tableName = await this.getTableName();
+
     if (!Number.isInteger(parseInt(id))) {
       throw new Error('Invalid PQR ID');
     }
 
-    const query = 'SELECT * FROM PQRSDf WHERE id = $1;';
+    const query = `SELECT * FROM ${tableName} WHERE id = $1;`;
     const result = await pool.query(query, [id]);
     return result.rows[0];
   }
 
   static async updateAnalysis(id, { classification, confidence, summary, topics, multi_dependency, assignedDepartment }) {
+    const tableName = await this.getTableName();
+
     if (!Number.isInteger(parseInt(id))) {
       throw new Error('Invalid PQR ID');
     }
@@ -148,7 +220,7 @@ class PQR {
     }
 
     const query = `
-      UPDATE PQRSDf
+      UPDATE ${tableName}
       SET classification = $1, 
           confidence = $2, 
           summary = $3, 
@@ -176,6 +248,8 @@ class PQR {
   }
 
   static async updateStatus(id, status) {
+    const tableName = await this.getTableName();
+
     if (!Number.isInteger(parseInt(id))) {
       throw new Error('Invalid PQR ID');
     }
@@ -184,18 +258,20 @@ class PQR {
       throw new Error(`Invalid status. Must be one of: ${VALID_STATUSES.join(', ')}`);
     }
 
-    const query = 'UPDATE PQRSDf SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING *;';
+    const query = `UPDATE ${tableName} SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING *;`;
     const result = await pool.query(query, [status, id]);
     return result.rows[0];
   }
 
   static async assignToUser(id, userId, department) {
+    const tableName = await this.getTableName();
+
     if (!Number.isInteger(parseInt(id))) {
       throw new Error('Invalid PQR ID');
     }
 
     const query = `
-      UPDATE PQRSDf 
+      UPDATE ${tableName} 
       SET assigned_to_user_id = $1, 
           assigned_department = $2,
           status = 'assigned',
@@ -209,12 +285,14 @@ class PQR {
   }
 
   static async acceptClassification(id) {
+    const tableName = await this.getTableName();
+
     if (!Number.isInteger(parseInt(id))) {
       throw new Error('Invalid PQR ID');
     }
 
     const query = `
-      UPDATE PQRSDf
+      UPDATE ${tableName}
       SET status = 'assigned',
           assigned_department = COALESCE(assigned_department, classification),
           updated_at = NOW()
@@ -227,6 +305,8 @@ class PQR {
   }
 
   static async updateClassification(id, { classification, confidence }) {
+    const tableName = await this.getTableName();
+
     if (!Number.isInteger(parseInt(id))) {
       throw new Error('Invalid PQR ID');
     }
@@ -240,7 +320,7 @@ class PQR {
     }
 
     const query = `
-      UPDATE PQRSDf
+      UPDATE ${tableName}
       SET classification = $1,
           confidence = $2,
           assigned_department = $1,
@@ -255,12 +335,14 @@ class PQR {
   }
 
   static async getStats() {
-    const totalResult = await pool.query('SELECT COUNT(*)::int AS total FROM PQRSDf;');
-    const confidenceResult = await pool.query('SELECT AVG(confidence)::numeric(10,2) AS avg_confidence FROM PQRSDf WHERE confidence IS NOT NULL;');
+    const tableName = await this.getTableName();
+
+    const totalResult = await pool.query(`SELECT COUNT(*)::int AS total FROM ${tableName};`);
+    const confidenceResult = await pool.query(`SELECT AVG(confidence)::numeric(10,2) AS avg_confidence FROM ${tableName} WHERE confidence IS NOT NULL;`);
     const correctedResult = await pool.query('SELECT COUNT(*)::int AS corrected FROM corrections;');
     const statusResult = await pool.query(`
       SELECT status, COUNT(*)::int AS count
-      FROM PQRSDf
+      FROM ${tableName}
       GROUP BY status;
     `);
 
