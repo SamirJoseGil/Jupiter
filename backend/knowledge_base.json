@@ -1,0 +1,44 @@
+{
+  "departamentos": {
+    "Infraestructura": {
+      "keywords": ["vías", "rampas", "espacio público", "calles", "avenidas", "parques", "banquetas", "aceras", "luminarias", "alumbrado", "repavimentación"],
+      "descripcion": "Solicitudes relacionadas con infraestructura pública, vías, y espacios públicos"
+    },
+    "Movilidad": {
+      "keywords": ["tránsito", "vehículos", "transporte", "ciclovía", "bicicleta", "paradas", "buses", "semáforos", "estacionamiento"],
+      "descripcion": "Solicitudes sobre movilidad, transporte público, y circulación vehicular"
+    },
+    "Salud": {
+      "keywords": ["hospital", "ambulancia", "médico", "enfermedad", "emergencia", "vacuna", "salud", "clínica", "paciente"],
+      "descripcion": "Solicitudes relacionadas con servicios de salud"
+    },
+    "Educación": {
+      "keywords": ["escuela", "colegio", "universidad", "estudiante", "profesor", "educación", "matrícula", "aula", "maestro"],
+      "descripcion": "Solicitudes sobre educación y servicios educativos"
+    },
+    "Servicios Públicos": {
+      "keywords": ["agua", "electricidad", "gas", "basura", "aseo", "servicio", "acueducto", "energía", "recolección"],
+      "descripcion": "Solicitudes sobre servicios públicos básicos"
+    },
+    "Desarrollo Económico": {
+      "keywords": ["negocio", "empresa", "licencia", "permiso", "comercio", "empleo", "trabajo", "industria", "comerciante"],
+      "descripcion": "Solicitudes relacionadas con desarrollo económico y empleo"
+    },
+    "Ambiente": {
+      "keywords": ["contaminación", "ambiente", "verde", "árbol", "fauna", "flora", "residuos", "humo", "basura", "ecología"],
+      "descripcion": "Solicitudes sobre temas ambientales y sostenibilidad"
+    },
+    "Seguridad": {
+      "keywords": ["crimen", "seguridad", "policía", "delito", "robo", "asalto", "vigilancia", "peligro", "inseguridad"],
+      "descripcion": "Solicitudes sobre seguridad ciudadana"
+    },
+    "Asuntos Sociales": {
+      "keywords": ["familia", "vulnerabilidad", "desplazado", "adulto mayor", "niño", "protección", "social", "pobreza", "asistencia"],
+      "descripcion": "Solicitudes sobre protección social y asuntos familiares"
+    },
+    "Cultura y Deporte": {
+      "keywords": ["cultura", "deporte", "evento", "festival", "música", "arte", "teatro", "gimnasio", "cancha", "biblioteca"],
+      "descripcion": "Solicitudes sobre actividades culturales y deportivas"
+    }
+  }
+}
