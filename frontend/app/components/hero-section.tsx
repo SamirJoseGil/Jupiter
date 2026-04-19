@@ -73,8 +73,8 @@ export default function HeroSection() {
                   <p className="text-sm text-slate-600">Oficial</p>
                 </div>
                 <div>
-                  <p className="text-2xl font-black text-slate-900 sm:text-3xl">Real</p>
-                  <p className="text-sm text-slate-600">Seguimiento</p>
+                  <p className="text-2xl font-black text-slate-900 sm:text-3xl">Seguimiento</p>
+                  <p className="text-sm text-slate-600">Real</p>
                 </div>
               </div>
             </motion.div>

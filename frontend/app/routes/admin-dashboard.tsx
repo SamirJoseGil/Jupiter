@@ -6,7 +6,8 @@ import EmailImporter from "~/components/email-importer";
 import ChannelView from "~/components/channel-view";
 import AdminResponseTemplate from "~/components/admin-response-template";
 import AdminFaqManager from "~/components/admin-faq-manager";
-import { isAuthenticated, getHeaders } from "~/utils/auth";
+import AdminUserManager from "~/components/admin-user-manager";
+import { isAuthenticated, getHeaders, getStoredUser } from "~/utils/auth";
 import { API_BASE_URL } from "~/config";
 
 interface PQRSDfDf {
@@ -60,12 +61,16 @@ export default function AdminDashboardPage() {
   const [useMultiChannelView, setUseMultiChannelView] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarPinned, setSidebarPinned] = useState(false);
-  const [sidebarTab, setSidebarTab] = useState<"template" | "faq">("template");
+  const [sidebarTab, setSidebarTab] = useState<"template" | "faq" | "users">("template");
+  const [isSuperadmin, setIsSuperadmin] = useState(false);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [survey, setSurvey] = useState<SurveyData | null>(null);
   const [surveyLoading, setSurveyLoading] = useState(false);
 
   useEffect(() => {
+    const user = getStoredUser();
+    setIsSuperadmin(user?.role === 'superadmin');
+
     try {
       const stored = window.localStorage.getItem("admin.sidebar.pinned");
       if (stored === "true") {
@@ -84,6 +89,12 @@ export default function AdminDashboardPage() {
       // Ignore storage errors.
     }
   }, [sidebarPinned]);
+
+  useEffect(() => {
+    if (!isSuperadmin && sidebarTab === 'users') {
+      setSidebarTab('template');
+    }
+  }, [isSuperadmin, sidebarTab]);
 
   useEffect(() => {
     // Check authentication
@@ -178,7 +189,7 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const openToolsSidebar = (tab: "template" | "faq") => {
+  const openToolsSidebar = (tab: "template" | "faq" | "users") => {
     setSidebarTab(tab);
     setSidebarOpen(true);
   };
@@ -315,11 +326,25 @@ export default function AdminDashboardPage() {
           >
             FAQ
           </button>
+          {isSuperadmin && (
+            <button
+              onClick={() => setSidebarTab("users")}
+              className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
+                sidebarTab === "users"
+                  ? "border-[#3366CC]/25 bg-[#3366CC]/10 text-[#3366CC]"
+                  : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+              }`}
+            >
+              Usuarios
+            </button>
+          )}
         </div>
       </div>
 
       <div className="min-h-0 flex-1 overflow-auto p-4">
-        {sidebarTab === "template" ? <AdminResponseTemplate /> : <AdminFaqManager />}
+        {sidebarTab === "template" && <AdminResponseTemplate />}
+        {sidebarTab === "faq" && <AdminFaqManager />}
+        {sidebarTab === "users" && isSuperadmin && <AdminUserManager />}
       </div>
     </div>
   );
@@ -374,6 +399,14 @@ export default function AdminDashboardPage() {
             >
               FAQ
             </button>
+            {isSuperadmin && (
+              <button
+                onClick={() => openToolsSidebar("users")}
+                className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                Usuarios
+              </button>
+            )}
             <button
               onClick={() => navigate('/')}
               className="rounded-xl border border-slate-300 bg-white px-4 py-2 font-semibold text-slate-700 transition hover:bg-slate-50"

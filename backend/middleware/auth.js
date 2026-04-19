@@ -36,7 +36,7 @@ const verifyAdmin = (req, res, next) => {
     });
   }
 
-  if (req.user.role !== 'admin') {
+  if (!['admin', 'superadmin'].includes(req.user.role)) {
     return res.status(403).json({
       error: {
         status: 403,
@@ -48,7 +48,30 @@ const verifyAdmin = (req, res, next) => {
   next();
 };
 
+const verifySuperadmin = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({
+      error: {
+        status: 401,
+        message: 'Authentication required'
+      }
+    });
+  }
+
+  if (req.user.role !== 'superadmin') {
+    return res.status(403).json({
+      error: {
+        status: 403,
+        message: 'Superadmin access required'
+      }
+    });
+  }
+
+  next();
+};
+
 module.exports = {
   verifyToken,
-  verifyAdmin
+  verifyAdmin,
+  verifySuperadmin
 };

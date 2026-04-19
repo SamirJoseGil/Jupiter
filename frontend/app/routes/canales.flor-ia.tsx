@@ -1,7 +1,7 @@
 import { Link } from '@remix-run/react';
 
 export default function FlorIAFallbackPage() {
-  const whatsappUrl = import.meta.env.VITE_FLOR_IA_WHATSAPP_URL || 'https://wa.me/573044444144';
+  const whatsappUrl = import.meta.env.VITE_FLOR_IA_WHATSAPP_URL || 'https://wa.me/573016044444';
 
   return (
     <main className="min-h-screen bg-white px-4 py-12 text-slate-900 sm:px-8 lg:px-12">

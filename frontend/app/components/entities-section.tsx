@@ -110,13 +110,6 @@ export default function EntitiesSection() {
                     <p className="text-sm text-slate-600 group-hover:text-slate-700 transition">
                       {entity.description}
                     </p>
-
-                    {/* Arrow on hover */}
-                    <div className="pt-2 group-hover:translate-x-1 transition">
-                      <span className="text-sm font-semibold text-slate-400 group-hover:text-slate-700">
-                        →
-                      </span>
-                    </div>
                   </div>
                 </div>
               </motion.div>

@@ -14,6 +14,19 @@ const { verifyToken, verifyAdmin } = require('../middleware/auth');
 const router = express.Router();
 
 const FAQ_MATCH_THRESHOLD = 0.2;
+const MAX_PQRS_PER_HOUR = 3;
+const submissionTracker = new Map();
+const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const ALLOWED_DOCUMENT_TYPES = new Set([
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'text/plain',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.ms-powerpoint',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+]);
 
 const extractKeywords = (question) => tokenize(question).slice(0, 8);
 
@@ -23,6 +36,57 @@ const renderResponseTemplate = (template, context) => {
     .replace(/\{\{DEPENDENCIA\}\}/g, context.department || 'la dependencia competente')
     .replace(/\{\{ESTADO\}\}/g, context.status || 'en gestion')
     .replace(/\{\{RESUMEN_CASO\}\}/g, context.summary || 'Su solicitud se encuentra en revision inicial.');
+};
+
+const getRateLimitKey = (req, citizenId) => {
+  if (citizenId) {
+    return `citizen:${String(citizenId).trim()}`;
+  }
+
+  const forwardedFor = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
+  const ip = forwardedFor || req.ip || 'unknown';
+  return `ip:${ip}`;
+};
+
+const isWithinHourlyLimit = (key) => {
+  const now = Date.now();
+  const hourAgo = now - (60 * 60 * 1000);
+  const existing = submissionTracker.get(key) || [];
+  const recent = existing.filter((timestamp) => timestamp > hourAgo);
+
+  if (recent.length >= MAX_PQRS_PER_HOUR) {
+    return false;
+  }
+
+  return true;
+};
+
+const registerSubmission = (key) => {
+  const now = Date.now();
+  const hourAgo = now - (60 * 60 * 1000);
+  const existing = submissionTracker.get(key) || [];
+  const recent = existing.filter((timestamp) => timestamp > hourAgo);
+
+  recent.push(now);
+  submissionTracker.set(key, recent);
+};
+
+const validateEvidenceFiles = ({ files, allowedTypes, kind }) => {
+  if (!Array.isArray(files)) {
+    return;
+  }
+
+  for (const file of files) {
+    const contentType = String(file?.contentType || '').toLowerCase();
+    if (!allowedTypes.has(contentType)) {
+      throw new Error(`Unsupported ${kind} format: ${contentType || 'unknown'}`);
+    }
+
+    const dataUrl = String(file?.dataUrl || '');
+    if (!/^data:[^;]+;base64,/.test(dataUrl)) {
+      throw new Error(`Invalid ${kind} payload`);
+    }
+  }
 };
 
 // GET /faq - List frequent questions (public)
@@ -350,6 +414,19 @@ router.post('/ingest', async (req, res) => {
       });
     }
 
+    validateEvidenceFiles({ files: evidenceImages, allowedTypes: ALLOWED_IMAGE_TYPES, kind: 'image' });
+    validateEvidenceFiles({ files: evidenceDocuments, allowedTypes: ALLOWED_DOCUMENT_TYPES, kind: 'document' });
+
+    const rateLimitKey = getRateLimitKey(req, citizenId);
+    if (!isWithinHourlyLimit(rateLimitKey)) {
+      return res.status(429).json({
+        error: {
+          status: 429,
+          message: 'Has alcanzado el maximo de 3 radicados por hora. Intenta nuevamente mas tarde.'
+        }
+      });
+    }
+
     let pqr = await PQR.create({ content, channel, citizenId, neighborhood });
 
     const hasImageEvidence = Array.isArray(evidenceImages) && evidenceImages.length > 0;
@@ -375,6 +452,8 @@ router.post('/ingest', async (req, res) => {
     } catch (relationError) {
       console.warn('PQR relation rebuild warning:', relationError.message);
     }
+
+    registerSubmission(rateLimitKey);
 
     res.status(201).json({
       message: 'PQRSDF submitted successfully',

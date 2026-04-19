@@ -13,6 +13,46 @@ interface PQRSDfDfFormProps {
   onSuccess?: (payload?: { id: number; status: string }) => void;
 }
 
+const MIN_CONTENT_LENGTH = 20;
+const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const ALLOWED_DOCUMENT_TYPES = new Set([
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'text/plain',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.ms-powerpoint',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+]);
+const ALLOWED_DOCUMENT_EXTENSIONS = new Set(['pdf', 'doc', 'docx', 'txt', 'xlsx', 'xls', 'ppt', 'pptx']);
+const MIME_BY_EXTENSION: Record<string, string> = {
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  webp: 'image/webp',
+  pdf: 'application/pdf',
+  doc: 'application/msword',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  txt: 'text/plain',
+  xls: 'application/vnd.ms-excel',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  ppt: 'application/vnd.ms-powerpoint',
+  pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+};
+
+const getExtension = (fileName: string) => {
+  const parts = fileName.toLowerCase().split('.');
+  return parts.length > 1 ? parts[parts.length - 1] : '';
+};
+
+const resolveMimeType = (file: File) => {
+  if (file.type) {
+    return file.type;
+  }
+  return MIME_BY_EXTENSION[getExtension(file.name)] || 'application/octet-stream';
+};
+
 const CONTACT_INTENTS: Array<{ label: string; hint: string; channel: FormChannel }> = [
   { label: "Jupiter", hint: "Radicación y seguimiento institucional", channel: "official-web" },
   { label: "Chatear por WhatsApp", hint: "Respuesta rápida por mensajería", channel: "official-whatsapp" },
@@ -28,6 +68,7 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
   const [channel, setChannel] = useState<FormChannel>("official-web");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState<"success" | "error" | "info">("info");
   const [imageEvidence, setImageEvidence] = useState<File[]>([]);
   const [documentEvidence, setDocumentEvidence] = useState<File[]>([]);
   const [suggestion, setSuggestion] = useState<SuggestionPreview | null>(null);
@@ -39,7 +80,32 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
   const shouldRedirectToExternal = isOfficialChannel && channel !== 'official-web';
 
   const contentLength = content.trim().length;
-  const isValidContent = contentLength <= 2000;
+  const isValidContent = contentLength >= MIN_CONTENT_LENGTH && contentLength <= 2000;
+
+  const handleImageSelection = (files: File[]) => {
+    const valid = files.filter((file) => ALLOWED_IMAGE_TYPES.has(file.type));
+    const invalid = files.length - valid.length;
+    setImageEvidence(valid);
+
+    if (invalid > 0) {
+      setMessageType('error');
+      setMessage(`Se omitieron ${invalid} imagen(es). Solo se permiten formatos JPG, PNG y WEBP.`);
+    }
+  };
+
+  const handleDocumentSelection = (files: File[]) => {
+    const valid = files.filter((file) => {
+      const extension = getExtension(file.name);
+      return ALLOWED_DOCUMENT_TYPES.has(file.type) || ALLOWED_DOCUMENT_EXTENSIONS.has(extension);
+    });
+    const invalid = files.length - valid.length;
+    setDocumentEvidence(valid);
+
+    if (invalid > 0) {
+      setMessageType('error');
+      setMessage(`Se omitieron ${invalid} documento(s). Formatos permitidos: PDF, DOC, DOCX, TXT, XLS, XLSX, PPT y PPTX.`);
+    }
+  };
 
   const fileToDataUrl = (file: File) =>
     new Promise<string>((resolve, reject) => {
@@ -101,6 +167,7 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
 
     if (shouldRedirectToExternal && officialConfig) {
       window.open(officialConfig.redirectUrl, "_blank", "noopener,noreferrer");
+      setMessageType("info");
       setMessage(`Te redirigimos a ${officialConfig.label}. Si no se abrió automáticamente, usa el botón de acceso directo.`);
       setLoading(false);
       return;
@@ -109,7 +176,8 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
     try {
       // VALIDAR PRIMERO antes de enviar al servidor
       if (!isValidContent) {
-        setMessage("La solicitud no puede superar 2000 caracteres");
+        setMessageType("error");
+        setMessage(`Tu solicitud debe tener entre ${MIN_CONTENT_LENGTH} y 2000 caracteres.`);
         setLoading(false);
         return;
       }
@@ -117,7 +185,7 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
       const evidenceImagesPayload = await Promise.all(
         imageEvidence.map(async (file) => ({
           fileName: file.name,
-          contentType: file.type,
+          contentType: resolveMimeType(file),
           dataUrl: await fileToDataUrl(file),
         }))
       );
@@ -125,7 +193,7 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
       const evidenceDocumentsPayload = await Promise.all(
         documentEvidence.map(async (file) => ({
           fileName: file.name,
-          contentType: file.type,
+          contentType: resolveMimeType(file),
           dataUrl: await fileToDataUrl(file),
         }))
       );
@@ -145,9 +213,13 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
         }),
       });
 
-      if (!response.ok) throw new Error("Error submitting PQRSDF");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.error?.message || "No fue posible radicar tu solicitud.");
+      }
 
       const data = await response.json();
+      setMessageType("success");
       setMessage(`PQRSDF enviada exitosamente. Radicado #${data?.pqr?.id ?? 'N/D'}`);
       setContent("");
       setCitizenId("");
@@ -160,7 +232,8 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
         setTimeout(() => onSuccess({ id: data?.pqr?.id, status: data?.pqr?.status }), 1200);
       }
     } catch (error) {
-      setMessage("Error al enviar. Intenta de nuevo.");
+      setMessageType("error");
+      setMessage(error instanceof Error ? error.message : "Error al enviar. Intenta de nuevo.");
       console.error(error);
     } finally {
       setLoading(false);
@@ -276,10 +349,10 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
             className="w-full resize-none rounded-xl border border-slate-300 bg-white/90 px-4 py-3 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30 focus:outline-none"
           />
           <div className="mt-2 flex items-center justify-between text-xs">
-            <span className={isValidContent ? "text-gray-500" : "text-red-600"}>
-              Máximo 2000 caracteres
+            <span className={isValidContent ? "text-emerald-600 font-semibold" : "text-red-600 font-semibold"}>
+              Minimo {MIN_CONTENT_LENGTH} y maximo 2000 caracteres
             </span>
-            <span className="text-gray-500">{contentLength}/2000</span>
+            <span className={isValidContent ? "text-slate-600" : "text-red-600"}>{contentLength}/2000</span>
           </div>
         </div>
 
@@ -300,9 +373,9 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
             <input
               id="evidence-images"
               type="file"
-              accept="image/*"
+              accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
               multiple
-              onChange={(event) => setImageEvidence(Array.from(event.target.files || []))}
+              onChange={(event) => handleImageSelection(Array.from(event.target.files || []))}
               className="hidden"
             />
             {imageEvidence.length > 0 && (
@@ -340,7 +413,7 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
               type="file"
               accept=".pdf,.doc,.docx,.txt,.xlsx,.xls,.ppt,.pptx"
               multiple
-              onChange={(event) => setDocumentEvidence(Array.from(event.target.files || []))}
+              onChange={(event) => handleDocumentSelection(Array.from(event.target.files || []))}
               className="hidden"
             />
             {documentEvidence.length > 0 && (
@@ -433,7 +506,16 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
 
       {/* Mensaje de estado */}
       {message && (
-        <div aria-live="polite" className="mt-4 rounded-xl bg-slate-100 p-4 text-center text-sm font-medium text-slate-800">
+        <div
+          aria-live="polite"
+          className={`mt-4 rounded-xl p-4 text-center text-sm font-medium ${
+            messageType === "success"
+              ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
+              : messageType === "error"
+              ? "border border-red-200 bg-red-50 text-red-700"
+              : "border border-slate-200 bg-slate-100 text-slate-800"
+          }`}
+        >
           {message}
         </div>
       )}

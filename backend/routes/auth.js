@@ -1,7 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const { verifyToken, verifyAdmin } = require('../middleware/auth');
+const { verifyToken, verifyAdmin, verifySuperadmin } = require('../middleware/auth');
 const router = express.Router();
 
 const generateToken = (user) => {
@@ -10,7 +10,7 @@ const generateToken = (user) => {
       id: user.id,
       email: user.email,
       department: user.department,
-      role: 'admin'
+      role: user.role || 'admin'
     },
     process.env.JWT_SECRET,
     { expiresIn: '24h' }
@@ -285,6 +285,139 @@ router.put('/me/profile', verifyToken, verifyAdmin, async (req, res) => {
       error: {
         status: 500,
         message: 'Server error'
+      }
+    });
+  }
+});
+
+router.get('/users', verifyToken, verifySuperadmin, async (req, res) => {
+  try {
+    const users = await User.listAll();
+    res.json({ users });
+  } catch (error) {
+    console.error('Users list error:', error);
+    res.status(500).json({
+      error: {
+        status: 500,
+        message: 'Server error'
+      }
+    });
+  }
+});
+
+router.post('/users', verifyToken, verifySuperadmin, async (req, res) => {
+  try {
+    const { email, password, department, role } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        error: {
+          status: 400,
+          message: 'Email and password required'
+        }
+      });
+    }
+
+    const created = await User.create(email, password, department, role || 'admin');
+    res.status(201).json({ message: 'User created successfully', user: sanitizeUser(created) });
+  } catch (error) {
+    console.error('User create error:', error);
+    res.status(400).json({
+      error: {
+        status: 400,
+        message: error.message
+      }
+    });
+  }
+});
+
+router.put('/users/:id', verifyToken, verifySuperadmin, async (req, res) => {
+  try {
+    const userId = Number(req.params.id);
+    if (!Number.isFinite(userId)) {
+      return res.status(400).json({
+        error: {
+          status: 400,
+          message: 'Invalid user id'
+        }
+      });
+    }
+
+    if (req.user.id === userId && req.body.role && req.body.role !== 'superadmin') {
+      return res.status(400).json({
+        error: {
+          status: 400,
+          message: 'Cannot demote your own superadmin account'
+        }
+      });
+    }
+
+    const updated = await User.updateById(userId, {
+      department: typeof req.body.department === 'string' ? req.body.department : null,
+      role: typeof req.body.role === 'string' ? req.body.role : null,
+      isActive: typeof req.body.is_active === 'boolean' ? req.body.is_active : null,
+      password: typeof req.body.password === 'string' && req.body.password.trim() ? req.body.password : null,
+    });
+
+    if (!updated) {
+      return res.status(404).json({
+        error: {
+          status: 404,
+          message: 'User not found'
+        }
+      });
+    }
+
+    res.json({ message: 'User updated successfully', user: sanitizeUser(updated) });
+  } catch (error) {
+    console.error('User update error:', error);
+    res.status(400).json({
+      error: {
+        status: 400,
+        message: error.message
+      }
+    });
+  }
+});
+
+router.delete('/users/:id', verifyToken, verifySuperadmin, async (req, res) => {
+  try {
+    const userId = Number(req.params.id);
+    if (!Number.isFinite(userId)) {
+      return res.status(400).json({
+        error: {
+          status: 400,
+          message: 'Invalid user id'
+        }
+      });
+    }
+
+    if (req.user.id === userId) {
+      return res.status(400).json({
+        error: {
+          status: 400,
+          message: 'Cannot delete your own account'
+        }
+      });
+    }
+
+    const deactivated = await User.deactivate(userId);
+    if (!deactivated) {
+      return res.status(404).json({
+        error: {
+          status: 404,
+          message: 'User not found'
+        }
+      });
+    }
+
+    res.json({ message: 'User deactivated successfully', user: deactivated });
+  } catch (error) {
+    console.error('User delete error:', error);
+    res.status(400).json({
+      error: {
+        status: 400,
+        message: error.message
       }
     });
   }

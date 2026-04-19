@@ -83,7 +83,7 @@ export const OFFICIAL_CHANNEL_CONFIG: Record<OfficialChannel, {
   'official-phone': {
     label: 'Línea Telefónica Oficial',
     description: 'Atención por llamada con orientación de un agente.',
-    redirectUrl: import.meta.env.VITE_MEDELLIN_PHONE_URL || 'tel:+576044444144',
+    redirectUrl: import.meta.env.VITE_MEDELLIN_PHONE_URL || 'tel:+573016044444',
     ingestChannel: 'phone',
     actionLabel: 'Llamar ahora'
   }
