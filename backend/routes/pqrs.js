@@ -10,13 +10,50 @@ const EmailIngestion = require('../models/emailIngestion');
 const { analyze } = require('../services/ai');
 const { uploadEvidenceFiles } = require('../services/storage');
 const { GUIDELINES, DEFAULT_TEMPLATE } = require('../services/pqrsGuidelines');
-const { tokenize, buildGenericAnswer, rankFAQs, findRelated } = require('../services/faqEngine');
+const { normalizeText, tokenize, buildGenericAnswer, rankFAQs, findRelated } = require('../services/faqEngine');
 const { verifyToken, verifyAdmin } = require('../middleware/auth');
 const router = express.Router();
 
 const FAQ_MATCH_THRESHOLD = 0.2;
 const MAX_PQRS_PER_HOUR = 3;
 const submissionTracker = new Map();
+const PROFANITY_WORDS = new Set([
+  'puta',
+  'puto',
+  'putas',
+  'putos',
+  'mierda',
+  'mierdas',
+  'joder',
+  'jodido',
+  'jodida',
+  'gonorrea',
+  'gonorreas',
+  'hpta',
+  'hp',
+  'malparido',
+  'malparida',
+  'imbecil',
+  'idiota',
+  'estupido',
+  'estupida',
+  'baboso',
+  'babosa',
+  'pendejo',
+  'pendeja',
+  'cabron',
+  'cabrona',
+  'culo',
+  'culos',
+  'cojudo',
+  'cojuda',
+  'naco',
+  'naca',
+  'tarado',
+  'tarada',
+  'basura',
+  'mierdero',
+]);
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const ALLOWED_DOCUMENT_TYPES = new Set([
   'application/pdf',
@@ -88,6 +125,16 @@ const validateEvidenceFiles = ({ files, allowedTypes, kind }) => {
       throw new Error(`Invalid ${kind} payload`);
     }
   }
+};
+
+const findProfanity = (text = '') => {
+  const normalized = normalizeText(text);
+  if (!normalized) {
+    return [];
+  }
+
+  const tokens = normalized.split(' ');
+  return Array.from(PROFANITY_WORDS).filter((word) => tokens.includes(word));
 };
 
 // GET /faq - List frequent questions (public)
@@ -411,6 +458,16 @@ router.post('/ingest', async (req, res) => {
         error: {
           status: 400,
           message: 'Content and channel are required'
+        }
+      });
+    }
+
+    const profanityMatches = findProfanity(content);
+    if (profanityMatches.length > 0) {
+      return res.status(400).json({
+        error: {
+          status: 400,
+          message: `Tu solicitud contiene lenguaje no permitido: ${profanityMatches.slice(0, 5).join(', ')}. Reescribe el texto y vuelve a intentarlo.`
         }
       });
     }

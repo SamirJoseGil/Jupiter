@@ -40,6 +40,43 @@ const MIME_BY_EXTENSION: Record<string, string> = {
   ppt: 'application/vnd.ms-powerpoint',
   pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
 };
+const PROFANITY_WORDS = [
+  'puta',
+  'puto',
+  'putas',
+  'putos',
+  'mierda',
+  'mierdas',
+  'joder',
+  'jodido',
+  'jodida',
+  'gonorrea',
+  'gonorreas',
+  'hpta',
+  'hp',
+  'malparido',
+  'malparida',
+  'imbecil',
+  'idiota',
+  'estupido',
+  'estupida',
+  'baboso',
+  'babosa',
+  'pendejo',
+  'pendeja',
+  'cabron',
+  'cabrona',
+  'culo',
+  'culos',
+  'cojudo',
+  'cojuda',
+  'naco',
+  'naca',
+  'tarado',
+  'tarada',
+  'basura',
+  'mierdero',
+];
 
 const getExtension = (fileName: string) => {
   const parts = fileName.toLowerCase().split('.');
@@ -51,6 +88,25 @@ const resolveMimeType = (file: File) => {
     return file.type;
   }
   return MIME_BY_EXTENSION[getExtension(file.name)] || 'application/octet-stream';
+};
+
+const normalizeContent = (value: string) =>
+  value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const findProfanity = (value: string) => {
+  const normalized = normalizeContent(value);
+  if (!normalized) return [];
+
+  const tokens = normalized.split(' ');
+  return PROFANITY_WORDS.filter((word) =>
+    tokens.includes(word) || normalized.includes(` ${word} `) || normalized.startsWith(`${word} `) || normalized.endsWith(` ${word}`)
+  );
 };
 
 const CONTACT_INTENTS: Array<{ label: string; hint: string; channel: FormChannel }> = [
@@ -80,6 +136,8 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
 
   const contentLength = content.trim().length;
   const isValidContent = contentLength >= MIN_CONTENT_LENGTH && contentLength <= 5000;
+  const detectedProfanity = findProfanity(content);
+  const hasProfanity = detectedProfanity.length > 0;
 
   const handleImageSelection = (files: File[]) => {
     const valid = files.filter((file) => ALLOWED_IMAGE_TYPES.has(file.type));
@@ -177,6 +235,13 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
       if (!isValidContent) {
         setMessageType("error");
         setMessage(`Tu solicitud debe tener entre ${MIN_CONTENT_LENGTH} y 5000 caracteres.`);
+        setLoading(false);
+        return;
+      }
+
+      if (hasProfanity) {
+        setMessageType('error');
+        setMessage(`Tu solicitud contiene lenguaje no permitido: ${detectedProfanity.slice(0, 3).join(', ')}. Reescribe el texto para continuar.`);
         setLoading(false);
         return;
       }
@@ -353,6 +418,12 @@ export default function PQRSDfDfForm({ onSuccess }: PQRSDfDfFormProps) {
             </span>
             <span className={isValidContent ? "text-slate-600" : "text-red-600"}>{contentLength}/5000</span>
           </div>
+          {hasProfanity && (
+            <div className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <p className="font-semibold">Lenguaje no permitido detectado</p>
+              <p className="mt-1">Revisa estas palabras antes de enviar: {detectedProfanity.slice(0, 6).join(', ')}.</p>
+            </div>
+          )}
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
